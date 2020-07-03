@@ -5,9 +5,10 @@ defmodule Battleship.MixProject do
     [
       app: :battleship,
       version: "0.1.0",
-      elixir: "~> 1.7",
+      elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
+      test_coverage: [tool: ExCoveralls],
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -37,6 +38,7 @@ defmodule Battleship.MixProject do
       {:phoenix_ecto, "~> 4.1"},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
+      {:excoveralls, "~> 0.10", only: :test},
       {:ecto_sql, "~> 3.4"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_live_view, "~> 0.13.0"},
@@ -63,7 +65,8 @@ defmodule Battleship.MixProject do
       setup: ["deps.get", "ecto.setup", "cmd npm install --prefix assets"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      "test.watch": ["test.watch --seed 0 --stale --trace"]
     ]
   end
 end

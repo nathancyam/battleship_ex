@@ -1,5 +1,5 @@
 defmodule Battleship.Core.Board do
-  defstruct [:grid]
+  defstruct [:grid, :positions, :ready?]
 
   alias Battleship.Core.Ship
 
@@ -16,9 +16,11 @@ defmodule Battleship.Core.Board do
   @type grid :: [Coordinate.t()]
   @type point :: {number(), number()}
   @type placement :: {point(), point()}
+  @type error :: :out_of_bounds | :overlap | :invalid_placement | :board_full
 
   @type t :: %__MODULE__{
-          grid: grid()
+          grid: grid(),
+          positions: %{optional(Ship.types()) => [integer()]}
         }
 
   @spec new() :: t()
@@ -30,22 +32,32 @@ defmodule Battleship.Core.Board do
       end
 
     %__MODULE__{
-      grid: grid
+      grid: grid,
+      ready?: false,
+      positions: %{}
     }
   end
 
   @spec place(board :: t(), ship :: Ship.types(), placement :: placement()) ::
-          {:ok, t()} | {:error, String.t(), t()}
-  def place(%__MODULE__{grid: grid} = board, ship, placement) do
+          {:ok, t()} | {:error, error(), t()}
+  def place(%__MODULE__{grid: grid, positions: positions} = board, ship, placement) do
     cond do
+      Enum.count(positions) == 5 ->
+        {:error, :board_full, board}
+
+      invalid_placement_for_ship?(placement, ship) ->
+        {:error, :invalid_placement, board}
+
       outside_bounds?(placement) ->
-        {:error, "Ship placed outside board bounds", board}
+        {:error, :out_of_bounds, board}
 
       occupied?(grid, placement) ->
-        {:error, "Ships can not overlap", board}
+        {:error, :overlap, board}
 
       true ->
-        {:ok, %{board | grid: update_board_with_placement(grid, Ship.atom(ship), placement)}}
+        {indices, new_grid} = update_board_with_placement(grid, Ship.atom(ship), placement)
+        positions = Map.put(positions, ship, indices)
+        {:ok, %{board | grid: new_grid, positions: positions, ready?: Enum.count(positions) == 5}}
     end
   end
 
@@ -53,20 +65,34 @@ defmodule Battleship.Core.Board do
           grid :: grid(),
           ship_atom :: Ship.type_atom(),
           placement :: placement()
-        ) :: grid()
+        ) :: {indices :: [integer()], grid :: grid()}
   defp update_board_with_placement(grid, ship_atom, placement) do
     indexes_to_change = placement_indicies(placement)
     grid_with_indices = Enum.with_index(grid)
 
-    grid_with_indices
-    |> Enum.map(fn
-      {coordinate, index} ->
-        if Enum.member?(indexes_to_change, index) do
-          %{coordinate | occupied_by: ship_atom}
-        else
-          coordinate
-        end
-    end)
+    updated_grid =
+      grid_with_indices
+      |> Enum.map(fn
+        {coordinate, index} ->
+          if Enum.member?(indexes_to_change, index) do
+            %{coordinate | occupied_by: ship_atom}
+          else
+            coordinate
+          end
+      end)
+
+    {indexes_to_change, updated_grid}
+  end
+
+  @spec invalid_placement_for_ship?(placement :: placement(), ship :: Ship.types()) :: boolean()
+  defp invalid_placement_for_ship?(placement, ship) do
+    case rotation_with_distance(placement) do
+      :diagonal ->
+        true
+
+      {_axis, distance} ->
+        Ship.length(ship) != distance + 1
+    end
   end
 
   @spec outside_bounds?(placement :: placement()) :: boolean()
@@ -84,6 +110,24 @@ defmodule Battleship.Core.Board do
     placement_indicies(placement)
     |> Enum.map(&Enum.at(grid, &1))
     |> Enum.any?(&match?(%Coordinate{occupied_by: ship} when not is_nil(ship), &1))
+  end
+
+  @spec rotation_with_distance(placement :: placement()) ::
+          :diagonal | {axis :: :x_axis | :y_axis, distance :: pos_integer()}
+  defp rotation_with_distance({start, terminal}) do
+    {start_row, start_column} = start
+    {end_row, end_column} = terminal
+
+    cond do
+      start_row != end_row and start_column != end_column ->
+        :diagonal
+
+      start_row == end_row ->
+        {:x_axis, abs(start_column - end_column)}
+
+      start_column == end_column ->
+        {:y_axis, abs(start_row - end_row)}
+    end
   end
 
   @spec placement_indicies(placement :: placement()) :: [number()]
