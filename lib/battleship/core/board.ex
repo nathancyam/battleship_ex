@@ -11,13 +11,18 @@ defmodule Battleship.Core.Board do
             column: integer(),
             occupied_by: Ship.type_atom() | nil
           }
+
+    def new(row, column) do
+      %__MODULE__{row: row, column: column, occupied_by: nil}
+    end
   end
 
-  @type grid :: [Coordinate.t()]
-  @type point :: {number(), number()}
+  @typep axis :: 0..9
+  @typep point :: {axis(), axis()}
   @type placement :: {point(), point()}
   @type error :: :out_of_bounds | :overlap | :invalid_placement | :board_full
 
+  @type grid :: [Coordinate.t()]
   @type t :: %__MODULE__{
           grid: grid(),
           positions: %{optional(Ship.types()) => [integer()]}
@@ -28,7 +33,7 @@ defmodule Battleship.Core.Board do
     grid =
       for row <- Range.new(0, 9),
           col <- Range.new(0, 9) do
-        %Coordinate{row: row, column: col, occupied_by: nil}
+        Coordinate.new(row, col)
       end
 
     %__MODULE__{
@@ -65,7 +70,7 @@ defmodule Battleship.Core.Board do
           grid :: grid(),
           ship_atom :: Ship.type_atom(),
           placement :: placement()
-        ) :: {indices :: [integer()], grid :: grid()}
+        ) :: {indices :: [non_neg_integer()], grid :: grid()}
   defp update_board_with_placement(grid, ship_atom, placement) do
     indexes_to_change = placement_indicies(placement)
     grid_with_indices = Enum.with_index(grid)
@@ -130,7 +135,7 @@ defmodule Battleship.Core.Board do
     end
   end
 
-  @spec placement_indicies(placement :: placement()) :: [number()]
+  @spec placement_indicies(placement :: placement()) :: [non_neg_integer()]
   defp placement_indicies({start, terminal}) do
     {start_row, start_column} = start
     {end_row, end_column} = terminal
