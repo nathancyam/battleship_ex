@@ -4,6 +4,10 @@ defmodule Battleship.Core.Game do
   defstruct [:player1, :player2, :active_turn]
 
   @type turn :: :player1 | :player2
+  @type turn_result ::
+          {:continue, :miss, t()}
+          | {:continue, :hit, t()}
+          | {:game_over, winner :: Player.t(), t()}
 
   @type t :: %__MODULE__{
           player1: Player.t(),
@@ -37,12 +41,17 @@ defmodule Battleship.Core.Game do
   For a given game, guess the position of the ship. Whose turn it is is determined
   by an internal struct.
   """
-  @spec guess(game :: t(), point :: Board.point()) :: {:miss | :hit, game :: t()}
+  @spec guess(game :: t(), point :: Board.point()) :: turn_result()
   def guess(game, point) do
     {target, current_player} = target(game)
-    {hit_result, target} = Player.confirm_hit(target, point)
+    {hit_result, all_destroyed?, target} = Player.confirm_hit(target, point)
     current_player = Player.handle_hit_result(current_player, hit_result, point)
-    {hit_result, swap_turn(game, current_player, target)}
+
+    if all_destroyed? do
+      {:game_over, current_player, swap_turn(game, current_player, target)}
+    else
+      {:continue, hit_result, swap_turn(game, current_player, target)}
+    end
   end
 
   @spec swap_turn(game :: t(), current_player :: Player.t(), target :: Player.t()) :: t()

@@ -52,9 +52,10 @@ defmodule Battleship.Core.Player do
 
   TODO: Should update the player's board to say that a hit was made.
   """
-  @spec confirm_hit(player :: t(), point :: Board.point()) :: {hit_result(), t()}
+  @spec confirm_hit(player :: t(), point :: Board.point()) ::
+          {hit :: hit_result(), no_more_ships? :: boolean(), player :: t()}
   def confirm_hit(player, point) do
     {hit_result, board} = Board.handle_point_selection(player.board, point)
-    {hit_result, %{player | board: board}}
+    {hit_result, Board.all_destroyed?(board), %{player | board: board}}
   end
 end

@@ -56,7 +56,7 @@ defmodule Battleship.Core.GameTest do
 
     test "should guess", %{game: game} do
       # Player A guesses A0
-      {:miss, game} = Game.guess(game, Notation.convert("A1"))
+      {:continue, :miss, game} = Game.guess(game, Notation.convert("A1"))
 
       playerA_guess_board =
         capture_io(fn ->
@@ -95,7 +95,7 @@ defmodule Battleship.Core.GameTest do
              """
 
       # Player B guesses A1
-      {:hit, game} = Game.guess(game, Notation.convert("B1"))
+      {:continue, :hit, game} = Game.guess(game, Notation.convert("B1"))
 
       playerB_guess_board =
         capture_io(fn ->
