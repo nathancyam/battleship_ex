@@ -1,5 +1,6 @@
 defmodule Battleship.Core.BoardTest do
   use ExUnit.Case
+  import ExUnit.CaptureIO
 
   alias Battleship.Core.{Board, Ship}
 
@@ -97,14 +98,24 @@ defmodule Battleship.Core.BoardTest do
       %{board: board}
     end
 
-    @tag debug: true
     test "returns true when all ships are destroyed", %{board: board} do
       points = [
         {0, 1},
         {0, 2},
         {0, 3},
         {0, 4},
-        {0, 5}
+        {0, 5},
+        {5, 4},
+        {5, 3},
+        {5, 2},
+        {5, 1},
+        {2, 2},
+        {2, 3},
+        {2, 4},
+        {9, 4},
+        {8, 4},
+        {4, 6},
+        {4, 7}
       ]
 
       board =
@@ -114,8 +125,13 @@ defmodule Battleship.Core.BoardTest do
             new_board
         end
 
-      IO.puts("\n")
-      Battleship.Core.ConsoleRenderer.render(board)
+      board_io =
+        capture_io(fn ->
+          Battleship.Core.ConsoleRenderer.render(board)
+        end)
+
+      refute board_io =~ "🚢"
+      assert Board.all_destroyed?(board)
     end
   end
 end
