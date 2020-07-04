@@ -17,10 +17,8 @@ defmodule Battleship.Core.Player do
     }
   end
 
-  @spec ready?(player :: Player.t()) :: boolean()
-  def ready?(player) do
-    player.board.ready?
-  end
+  @spec ready?(player :: t()) :: boolean()
+  def ready?(player), do: player.board.ready?
 
   @spec place(player :: t(), ship :: Ship.types(), placement :: Board.placement()) ::
           {:ok, t()} | {:error, String.t(), t()}
