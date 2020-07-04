@@ -73,8 +73,8 @@ defmodule Battleship.Core.BoardTest do
       refute board == new_board
 
       assert new_board.positions == %{
-               %Ship.Carrier{} => [0, 1, 2, 3, 4],
-               %Ship.Destroyer{} => [22, 23, 24]
+               %Ship{type: :carrier} => [0, 1, 2, 3, 4],
+               %Ship{type: :destroyer} => [22, 23, 24]
              }
     end
   end
