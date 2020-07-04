@@ -78,8 +78,6 @@ defmodule Battleship.Core.Board do
     {start_row, start_column} = point
     index = start_row * 10 + start_column
 
-    IO.inspect(index)
-
     Enum.reduce_while(board.positions, false, fn {_ship, placement}, acc ->
       if Enum.member?(placement, index) do
         {:halt, true}
