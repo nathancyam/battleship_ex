@@ -45,7 +45,6 @@ defmodule Battleship.Core.GameTest do
       %{game: Game.start!(playerA, playerB)}
     end
 
-    @tag debug: true
     test "should guess", %{game: game} do
       # Player A guesses A0
       {:miss, game} = Game.guess(game, Notation.convert("A1"))

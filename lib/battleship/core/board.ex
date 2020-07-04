@@ -131,10 +131,10 @@ defmodule Battleship.Core.Board do
         ) :: {indices :: [non_neg_integer()], grid :: grid()}
   defp update_board_with_placement(grid, ship_atom, placement) do
     indexes_to_change = placement_indicies(placement)
-    grid_with_indices = Enum.with_index(grid)
 
     updated_grid =
-      grid_with_indices
+      grid
+      |> Enum.with_index()
       |> Enum.map(fn
         {coordinate, index} ->
           if Enum.member?(indexes_to_change, index) do

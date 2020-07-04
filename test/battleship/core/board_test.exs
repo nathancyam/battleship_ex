@@ -97,6 +97,7 @@ defmodule Battleship.Core.BoardTest do
       %{board: board}
     end
 
+    @tag debug: true
     test "returns true when all ships are destroyed", %{board: board} do
       points = [
         {0, 1},

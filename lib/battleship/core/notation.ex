@@ -4,13 +4,22 @@ defmodule Battleship.Core.Notation do
   @doc ~s"""
   Converts the grid notation to a point tuple.
 
+  A point tuple notates this:
+
+  `{row, column}`
+
+  In the case of rows and columns:
+
+  - Columns are specified with alphabetical characters.
+  - Rows are numbers.
+
   ## Examples
 
       iex> Battleship.Core.Notation.convert("A1")
       {0, 0}
 
       iex> Battleship.Core.Notation.convert("A2")
-      {0, 1}
+      {1, 0}
 
       iex> Battleship.Core.Notation.convert("D4")
       {3, 3}
@@ -27,21 +36,21 @@ defmodule Battleship.Core.Notation do
 
     [letter, number] = String.split(upcased, "", trim: true)
 
-    x_axis =
+    row_axis =
       letter
       |> String.to_charlist()
       |> hd()
 
-    y_axis =
+    col_axis =
       number
       |> String.to_integer()
 
-    {x_axis - 65, y_axis - 1}
+    {col_axis - 1, row_axis - 65}
   end
 
   @spec point_to_index(point :: Board.point()) :: non_neg_integer()
   def point_to_index(point) do
     {row, column} = point
-    column * 10 + row
+    row * 10 + column
   end
 end
