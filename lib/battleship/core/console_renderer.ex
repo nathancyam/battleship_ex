@@ -4,8 +4,14 @@ defmodule Battleship.Core.ConsoleRenderer do
   @spec render(board :: Board.t() | GuessBoard.t()) :: [any()]
   def render(%Board{grid: grid}) do
     walk_over(grid, fn
-      %Board.Coordinate{occupied_by: nil} ->
+      %Board.Coordinate{occupied_by: nil, hit?: false} ->
         "🌊"
+
+      %Board.Coordinate{occupied_by: nil, hit?: true} ->
+        "❌"
+
+      %Board.Coordinate{occupied_by: _ship, hit?: true} ->
+        "💥"
 
       %Board.Coordinate{occupied_by: _ship} ->
         "🚢"

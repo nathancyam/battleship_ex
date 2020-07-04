@@ -49,12 +49,12 @@ defmodule Battleship.Core.GameTest do
       # Player A guesses A0
       {:miss, game} = Game.guess(game, Notation.convert("A1"))
 
-      playerA_board =
+      playerA_guess_board =
         capture_io(fn ->
           ConsoleRenderer.render(game.player1.guess_board)
         end)
 
-      assert playerA_board =~ """
+      assert playerA_guess_board =~ """
              🌊❓❓❓❓❓❓❓❓❓
              ❓❓❓❓❓❓❓❓❓❓
              ❓❓❓❓❓❓❓❓❓❓
@@ -67,15 +67,33 @@ defmodule Battleship.Core.GameTest do
              ❓❓❓❓❓❓❓❓❓❓
              """
 
+      playerB_board =
+        capture_io(fn ->
+          ConsoleRenderer.render(game.player2.board)
+        end)
+
+      assert playerB_board =~ """
+             ❌🌊🌊🌊🌊🌊🌊🌊🌊🌊
+             🚢🌊🌊🌊🌊🚢🌊🌊🌊🌊
+             🚢🌊🚢🌊🌊🚢🌊🌊🌊🌊
+             🚢🌊🚢🌊🌊🚢🌊🌊🌊🌊
+             🚢🌊🚢🌊🌊🚢🌊🌊🚢🚢
+             🚢🌊🌊🌊🌊🌊🌊🌊🌊🌊
+             🌊🌊🌊🌊🚢🌊🌊🌊🌊🌊
+             🌊🌊🌊🌊🚢🌊🌊🌊🌊🌊
+             🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+             🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+             """
+
       # Player B guesses A1
       {:hit, game} = Game.guess(game, Notation.convert("A2"))
 
-      playerB_board =
+      playerB_guess_board =
         capture_io(fn ->
           ConsoleRenderer.render(game.player2.guess_board)
         end)
 
-      assert playerB_board =~ """
+      assert playerB_guess_board =~ """
              ❓❓❓❓❓❓❓❓❓❓
              💥❓❓❓❓❓❓❓❓❓
              ❓❓❓❓❓❓❓❓❓❓
@@ -86,6 +104,24 @@ defmodule Battleship.Core.GameTest do
              ❓❓❓❓❓❓❓❓❓❓
              ❓❓❓❓❓❓❓❓❓❓
              ❓❓❓❓❓❓❓❓❓❓
+             """
+
+      playerA_board =
+        capture_io(fn ->
+          ConsoleRenderer.render(game.player1.board)
+        end)
+
+      assert playerA_board =~ """
+             🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+             💥🌊🌊🌊🌊🚢🌊🌊🌊🌊
+             🚢🌊🚢🌊🌊🚢🌊🌊🌊🌊
+             🚢🌊🚢🌊🌊🚢🌊🌊🌊🌊
+             🚢🌊🚢🌊🌊🚢🌊🌊🚢🚢
+             🚢🌊🌊🌊🌊🌊🌊🌊🌊🌊
+             🌊🌊🌊🌊🚢🌊🌊🌊🌊🌊
+             🌊🌊🌊🌊🚢🌊🌊🌊🌊🌊
+             🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+             🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
              """
     end
   end
