@@ -18,7 +18,7 @@ defmodule Battleship.Core.Board do
   end
 
   @typep axis :: 0..9
-  @typep point :: {axis(), axis()}
+  @type point :: {axis(), axis()}
   @type placement :: {point(), point()}
   @type error :: :out_of_bounds | :overlap | :invalid_placement | :board_full
 
@@ -43,6 +43,12 @@ defmodule Battleship.Core.Board do
     }
   end
 
+  @doc """
+  Places a ship piece to the board given the placement notation as the third
+  argument. If the placement is invalid, returns a tuple with the error and the
+  board before the placement. If the placement was valid, return the tuple with
+  the updated board.
+  """
   @spec place(board :: t(), ship :: Ship.types(), placement :: placement()) ::
           {:ok, t()} | {:error, error(), t()}
   def place(%__MODULE__{grid: grid, positions: positions} = board, ship, placement) do
@@ -65,6 +71,22 @@ defmodule Battleship.Core.Board do
         ready? = Enum.count(updated_ship_positions)
         {:ok, %{board | grid: new_grid, positions: updated_ship_positions, ready?: ready?}}
     end
+  end
+
+  @spec ship_on_point?(board :: t(), point :: point()) :: boolean()
+  def ship_on_point?(board, point) do
+    {start_row, start_column} = point
+    index = start_row * 10 + start_column
+
+    IO.inspect(index)
+
+    Enum.reduce_while(board.positions, false, fn {_ship, placement}, acc ->
+      if Enum.member?(placement, index) do
+        {:halt, true}
+      else
+        {:cont, acc}
+      end
+    end)
   end
 
   @spec update_board_with_placement(
