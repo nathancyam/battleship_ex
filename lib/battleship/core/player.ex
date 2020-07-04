@@ -1,18 +1,20 @@
 defmodule Battleship.Core.Player do
-  alias Battleship.Core.{Board, Ship}
+  alias Battleship.Core.{Board, GuessBoard, Ship}
 
-  defstruct [:board, :name]
+  defstruct [:board, :name, :guess_board]
 
   @type hit_result :: :miss | :hit
   @type t :: %__MODULE__{
           board: Board.t(),
-          name: String.t()
+          name: String.t(),
+          guess_board: GuessBoard.t()
         }
 
   @spec new(name :: String.t()) :: t()
   def new(name) do
     %__MODULE__{
       board: Board.new(),
+      guess_board: GuessBoard.new(),
       name: name
     }
   end
@@ -30,6 +32,12 @@ defmodule Battleship.Core.Player do
       {:error, reason, _board} ->
         {:error, reason, player}
     end
+  end
+
+  @spec handle_hit_result(player :: t(), hit_result :: hit_result(), point :: Board.point()) ::
+          t()
+  def handle_hit_result(%{guess_board: board} = player, hit_result, point) do
+    %{player | guess_board: GuessBoard.handle_guess_result(board, hit_result, point)}
   end
 
   @spec confirm_hit(player :: t(), point :: Board.point()) :: {hit_result(), t()}
