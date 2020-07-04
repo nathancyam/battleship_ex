@@ -13,6 +13,8 @@ defmodule Battleship.Application do
       BattleshipWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Battleship.PubSub},
+      {Registry, [keys: :unique, name: Battleship.GameRegistry]},
+      {Battleship.GameSupervisor, []},
       # Start the Endpoint (http/https)
       BattleshipWeb.Endpoint
       # Start a worker by calling: Battleship.Worker.start_link(arg)
