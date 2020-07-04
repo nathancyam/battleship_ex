@@ -19,8 +19,17 @@ defmodule Battleship.Core.GameTest do
   end
 
   describe "start!/2" do
-    test "fails when players are not ready" do
+    test "fails when player A is not ready" do
       playerA = Player.new("A")
+      playerB = Player.new("B")
+
+      assert_raise PlayerNotReadyError, fn ->
+        Game.start!(playerA, playerB)
+      end
+    end
+
+    test "fails when player B is not ready" do
+      playerA = create_ready_player("A")
       playerB = Player.new("B")
 
       assert_raise PlayerNotReadyError, fn ->
