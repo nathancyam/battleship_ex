@@ -42,6 +42,7 @@ defmodule Battleship.Core.BoardTest do
       assert new_board == board
     end
 
+    @tag debug: true
     test "fails when the board is full", %{board: board} do
       steps = [
         {Ship.new(:carrier), {{0, 1}, {0, 5}}},

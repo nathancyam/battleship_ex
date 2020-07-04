@@ -61,8 +61,9 @@ defmodule Battleship.Core.Board do
 
       true ->
         {indices, new_grid} = update_board_with_placement(grid, Ship.atom(ship), placement)
-        positions = Map.put(positions, ship, indices)
-        {:ok, %{board | grid: new_grid, positions: positions, ready?: Enum.count(positions) == 5}}
+        updated_ship_positions = Map.put(positions, ship, indices)
+        ready? = Enum.count(updated_ship_positions)
+        {:ok, %{board | grid: new_grid, positions: updated_ship_positions, ready?: ready?}}
     end
   end
 

@@ -43,6 +43,12 @@ defmodule Battleship.Core.Ship do
     end
   end
 
+  @spec all() :: [types()]
+  def all() do
+    [:patrol_boat, :submarine, :destroyer, :battleship, :carrier]
+    |> Enum.map(&new/1)
+  end
+
   @spec atom(ship :: types()) :: type_atom()
   def atom(ship) do
     case ship do
