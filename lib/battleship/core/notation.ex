@@ -10,7 +10,7 @@ defmodule Battleship.Core.Notation do
       {0, 0}
 
       iex> Battleship.Core.Notation.convert("A2")
-      {1, 0}
+      {0, 1}
 
       iex> Battleship.Core.Notation.convert("D4")
       {3, 3}
@@ -27,15 +27,21 @@ defmodule Battleship.Core.Notation do
 
     [letter, number] = String.split(upcased, "", trim: true)
 
-    y_axis =
+    x_axis =
       letter
       |> String.to_charlist()
       |> hd()
 
-    x_axis =
+    y_axis =
       number
       |> String.to_integer()
 
-    {x_axis - 1, y_axis - 65}
+    {x_axis - 65, y_axis - 1}
+  end
+
+  @spec point_to_index(point :: Board.point()) :: non_neg_integer()
+  def point_to_index(point) do
+    {row, column} = point
+    column * 10 + row
   end
 end

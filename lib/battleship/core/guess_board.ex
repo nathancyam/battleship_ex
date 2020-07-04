@@ -1,5 +1,5 @@
 defmodule Battleship.Core.GuessBoard do
-  alias Battleship.Core.Board
+  alias Battleship.Core.{Board, Notation}
 
   defmodule Coordinate do
     alias Battleship.Core.GuessBoard
@@ -49,8 +49,7 @@ defmodule Battleship.Core.GuessBoard do
           point :: Board.point()
         ) :: t()
   def handle_guess_result(%{grid: grid} = board, hit_result, point) do
-    {start_row, start_column} = point
-    index = start_row * 10 + start_column
+    index = Notation.point_to_index(point)
 
     new_grid =
       Enum.with_index(grid)

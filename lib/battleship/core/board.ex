@@ -7,7 +7,7 @@ defmodule Battleship.Core.Board do
 
   defstruct [:grid, :positions, :ready?]
 
-  alias Battleship.Core.Ship
+  alias Battleship.Core.{Notation, Ship}
 
   defmodule Coordinate do
     defstruct [:row, :column, :occupied_by, :hit?]
@@ -85,14 +85,21 @@ defmodule Battleship.Core.Board do
     end
   end
 
+  @spec all_destroyed?(board :: t()) :: boolean()
+  def all_destroyed?(board) do
+    board
+    |> all_ship_placements()
+    |> Enum.map(&Enum.at(board.grid, &1))
+    |> Enum.all?(&match?(%{hit?: true}, &1))
+  end
+
   @doc """
   Given a selected point, update the board based on whether the tile selected
   was hit.
   """
   @spec handle_point_selection(board :: t(), point :: point()) :: {:hit | :miss, t()}
   def handle_point_selection(%{positions: positions, grid: grid} = board, point) do
-    {start_row, start_column} = point
-    index = start_row * 10 + start_column
+    index = Notation.point_to_index(point)
 
     hit_state =
       Enum.reduce_while(positions, :miss, fn {_ship, placement}, acc ->
@@ -193,9 +200,15 @@ defmodule Battleship.Core.Board do
 
     for row <- Range.new(start_row, end_row),
         col <- Range.new(start_column, end_column) do
-      tens = 10 * col
-      single = 1 * row
+      tens = 10 * row
+      single = 1 * col
       tens + single
     end
+  end
+
+  @spec all_ship_placements(board :: t()) :: [non_neg_integer()]
+  defp all_ship_placements(%{positions: positions}) do
+    Map.values(positions)
+    |> List.flatten()
   end
 end

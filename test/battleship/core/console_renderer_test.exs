@@ -2,7 +2,7 @@ defmodule Battleship.Core.ConsoleRendererTest do
   use ExUnit.Case
 
   import ExUnit.CaptureIO
-  alias Battleship.Core.{Board, GuessBoard, ConsoleRenderer, Ship}
+  alias Battleship.Core.{Board, ConsoleRenderer, GuessBoard, Notation, Ship}
 
   describe "render/1" do
     setup do
@@ -46,18 +46,19 @@ defmodule Battleship.Core.ConsoleRendererTest do
 
       board_io = capture_io(fn -> ConsoleRenderer.render(board) end)
 
-      assert board_io =~ """
-             🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
-             🚢🌊🌊🌊🌊🚢🌊🌊🌊🌊
-             🚢🌊🚢🌊🌊🚢🌊🌊🌊🌊
-             🚢🌊🚢🌊🌊🚢🌊🌊🌊🌊
-             🚢🌊🚢🌊🌊🚢🌊🌊🚢🚢
-             🚢🌊🌊🌊🌊🌊🌊🌊🌊🌊
-             🌊🌊🌊🌊🚢🌊🌊🌊🌊🌊
-             🌊🌊🌊🌊🚢🌊🌊🌊🌊🌊
-             🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
-             🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
-             """
+      assert board_io =~
+               """
+               🌊🚢🚢🚢🚢🚢🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+               🌊🌊🚢🚢🚢🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊🚢🚢🌊🌊
+               🌊🚢🚢🚢🚢🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🚢🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🚢🌊🌊🌊🌊🌊
+               """
     end
   end
 
@@ -90,7 +91,7 @@ defmodule Battleship.Core.ConsoleRendererTest do
       new_board =
         board
         |> GuessBoard.handle_guess_result(:hit, {0, 0})
-        |> GuessBoard.handle_guess_result(:hit, {0, 1})
+        |> GuessBoard.handle_guess_result(:hit, Notation.convert("A2"))
         |> GuessBoard.handle_guess_result(:hit, {0, 2})
         |> GuessBoard.handle_guess_result(:hit, {0, 3})
         |> GuessBoard.handle_guess_result(:miss, {2, 2})
@@ -100,18 +101,19 @@ defmodule Battleship.Core.ConsoleRendererTest do
           ConsoleRenderer.render(new_board)
         end)
 
-      assert board_io == """
-             💥💥💥💥❓❓❓❓❓❓
-             ❓❓❓❓❓❓❓❓❓❓
-             ❓❓🌊❓❓❓❓❓❓❓
-             ❓❓❓❓❓❓❓❓❓❓
-             ❓❓❓❓❓❓❓❓❓❓
-             ❓❓❓❓❓❓❓❓❓❓
-             ❓❓❓❓❓❓❓❓❓❓
-             ❓❓❓❓❓❓❓❓❓❓
-             ❓❓❓❓❓❓❓❓❓❓
-             ❓❓❓❓❓❓❓❓❓❓
-             """
+      assert board_io =~
+               """
+               💥❓❓❓❓❓❓❓❓❓
+               💥❓❓❓❓❓❓❓❓❓
+               💥❓🌊❓❓❓❓❓❓❓
+               💥❓❓❓❓❓❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               """
     end
   end
 end

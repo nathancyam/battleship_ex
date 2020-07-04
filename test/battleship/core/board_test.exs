@@ -42,7 +42,6 @@ defmodule Battleship.Core.BoardTest do
       assert new_board == board
     end
 
-    @tag debug: true
     test "fails when the board is full", %{board: board} do
       steps = [
         {Ship.new(:carrier), {{0, 1}, {0, 5}}},
@@ -73,9 +72,49 @@ defmodule Battleship.Core.BoardTest do
       refute board == new_board
 
       assert new_board.positions == %{
-               %Ship.Carrier{} => [0, 10, 20, 30, 40],
-               %Ship.Destroyer{} => [22, 32, 42]
+               %Ship.Carrier{} => [0, 1, 2, 3, 4],
+               %Ship.Destroyer{} => [22, 23, 24]
              }
+    end
+  end
+
+  describe "all_destroyed?/1" do
+    setup do
+      steps = [
+        {Ship.new(:carrier), {{0, 1}, {0, 5}}},
+        {Ship.new(:battleship), {{5, 4}, {5, 1}}},
+        {Ship.new(:destroyer), {{2, 2}, {2, 4}}},
+        {Ship.new(:submarine), {{9, 4}, {8, 4}}},
+        {Ship.new(:patrol_boat), {{4, 6}, {4, 7}}}
+      ]
+
+      board =
+        Enum.reduce(steps, Board.new(), fn {ship, placement}, updated_board ->
+          {:ok, updated_board} = Board.place(updated_board, ship, placement)
+          updated_board
+        end)
+
+      %{board: board}
+    end
+
+    test "returns true when all ships are destroyed", %{board: board} do
+      points = [
+        {0, 1},
+        {0, 2},
+        {0, 3},
+        {0, 4},
+        {0, 5}
+      ]
+
+      board =
+        for point <- points, reduce: board do
+          acc ->
+            {_, new_board} = Board.handle_point_selection(acc, point)
+            new_board
+        end
+
+      IO.puts("\n")
+      Battleship.Core.ConsoleRenderer.render(board)
     end
   end
 end
