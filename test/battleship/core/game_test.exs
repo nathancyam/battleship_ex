@@ -46,7 +46,7 @@ defmodule Battleship.Core.GameTest do
     end
   end
 
-  describe "the game process" do
+  describe "the game turns" do
     setup do
       playerA = create_ready_player("A")
       playerB = create_ready_player("B")
@@ -132,6 +132,132 @@ defmodule Battleship.Core.GameTest do
              🌊🌊🌊🌊🚢🌊🌊🌊🌊🌊
              🌊🌊🌊🌊🚢🌊🌊🌊🌊🌊
              """
+    end
+
+    test "full game", %{game: game} do
+      perfect_game = [
+        {0, 1},
+        {0, 2},
+        {0, 3},
+        {0, 4},
+        {0, 5},
+        {5, 4},
+        {5, 3},
+        {5, 2},
+        {5, 1},
+        {2, 2},
+        {2, 3},
+        {2, 4},
+        {9, 4},
+        {8, 4},
+        {4, 6},
+        {4, 7}
+      ]
+
+      close_game = [
+        {1, 0},
+        {0, 2},
+        {0, 3},
+        {0, 4},
+        {0, 5},
+        {5, 4},
+        {5, 3},
+        {5, 2},
+        {5, 1},
+        {2, 2},
+        {2, 3},
+        {2, 4},
+        {9, 4},
+        {8, 4},
+        {4, 6},
+        {4, 7}
+      ]
+
+      turns = Enum.zip(perfect_game, close_game)
+
+      {_game, winner, _loser} =
+        Enum.reduce_while(turns, game, fn {playerA, playerB}, acc ->
+          {playerA_res, _, game} = winner = Game.guess(acc, playerA)
+          {playerB_res, _, game} = loser = Game.guess(game, playerB)
+
+          if playerA_res == :game_over || playerB_res == :game_over do
+            {:halt, {game, winner, loser}}
+          else
+            {:cont, game}
+          end
+        end)
+
+      {:game_over, winning_player, game} = winner
+      assert winning_player.name == "A"
+      assert game.over?
+
+      playerA_board =
+        capture_io(fn ->
+          ConsoleRenderer.render(game.player1.board)
+          ConsoleRenderer.render(game.player1.guess_board)
+        end)
+
+      assert playerA_board =~
+               """
+               🌊🚢💥💥💥💥🌊🌊🌊🌊
+               ❌🌊🌊🌊🌊🌊🌊🌊🌊🌊
+               🌊🌊💥💥💥🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊💥🚢🌊🌊
+               🌊💥💥💥💥🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊💥🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊💥🌊🌊🌊🌊🌊
+               """
+
+      assert playerA_board =~
+               """
+               ❓💥💥💥💥💥❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               ❓❓💥💥💥❓❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               ❓❓❓❓❓❓💥💥❓❓
+               ❓💥💥💥💥❓❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               ❓❓❓❓💥❓❓❓❓❓
+               ❓❓❓❓💥❓❓❓❓❓
+               """
+
+      playerB_board =
+        capture_io(fn ->
+          ConsoleRenderer.render(game.player2.board)
+          ConsoleRenderer.render(game.player2.guess_board)
+        end)
+
+      assert playerB_board =~
+               """
+               🌊💥💥💥💥💥🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+               🌊🌊💥💥💥🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊💥💥🌊🌊
+               🌊💥💥💥💥🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊🌊🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊💥🌊🌊🌊🌊🌊
+               🌊🌊🌊🌊💥🌊🌊🌊🌊🌊
+               """
+
+      assert playerB_board =~
+               """
+               ❓❓💥💥💥💥❓❓❓❓
+               🌊❓❓❓❓❓❓❓❓❓
+               ❓❓💥💥💥❓❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               ❓❓❓❓❓❓💥❓❓❓
+               ❓💥💥💥💥❓❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               ❓❓❓❓❓❓❓❓❓❓
+               ❓❓❓❓💥❓❓❓❓❓
+               ❓❓❓❓💥❓❓❓❓❓
+               """
     end
   end
 end

@@ -1,7 +1,7 @@
 defmodule Battleship.Core.Game do
   alias Battleship.Core.{Board, Player, PlayerNotReadyError}
 
-  defstruct [:player1, :player2, :active_turn]
+  defstruct [:player1, :player2, :active_turn, :over?]
 
   @type turn :: :player1 | :player2
   @type turn_result ::
@@ -12,7 +12,8 @@ defmodule Battleship.Core.Game do
   @type t :: %__MODULE__{
           player1: Player.t(),
           player2: Player.t(),
-          active_turn: turn()
+          active_turn: turn(),
+          over?: boolean()
         }
 
   @doc """
@@ -33,7 +34,8 @@ defmodule Battleship.Core.Game do
     %__MODULE__{
       player1: player1,
       player2: player2,
-      active_turn: :player1
+      active_turn: :player1,
+      over?: false
     }
   end
 
@@ -42,25 +44,39 @@ defmodule Battleship.Core.Game do
   by an internal struct.
   """
   @spec guess(game :: t(), point :: Board.point()) :: turn_result()
+  def guess(%__MODULE__{over?: true} = game, _point) do
+    {_, current_player} = target(game)
+    {:game_over, current_player, game}
+  end
+
   def guess(game, point) do
     {target, current_player} = target(game)
     {hit_result, all_destroyed?, target} = Player.confirm_hit(target, point)
     current_player = Player.handle_hit_result(current_player, hit_result, point)
 
     if all_destroyed? do
-      {:game_over, current_player, swap_turn(game, current_player, target)}
+      {:game_over, current_player, finish_game(game, current_player, target)}
     else
       {:continue, hit_result, swap_turn(game, current_player, target)}
     end
   end
 
   @spec swap_turn(game :: t(), current_player :: Player.t(), target :: Player.t()) :: t()
-  def swap_turn(%{active_turn: :player1} = game, current_player, target) do
+  defp swap_turn(%{active_turn: :player1} = game, current_player, target) do
     %{game | active_turn: :player2, player1: current_player, player2: target}
   end
 
-  def swap_turn(%{active_turn: :player2} = game, current_player, target) do
+  defp swap_turn(%{active_turn: :player2} = game, current_player, target) do
     %{game | active_turn: :player1, player2: current_player, player1: target}
+  end
+
+  @spec finish_game(game :: t(), winner :: Player.t(), loser :: Player.t()) :: t()
+  defp finish_game(%{active_turn: :player1} = game, winner, loser) do
+    %{game | player1: winner, player2: loser, over?: true}
+  end
+
+  defp finish_game(%{active_turn: :player2} = game, winner, loser) do
+    %{game | player2: winner, player1: loser, over?: true}
   end
 
   @spec target(game :: t()) :: {Player.t(), Player.t()}

@@ -19,13 +19,8 @@ defmodule Battleship.Core.GuessBoard do
     end
 
     @spec designate_hit_result(coordinate :: t(), hit_result :: GuessBoard.hit_result()) :: t()
-    def designate_hit_result(coordinate, hit_result) do
-      case hit_result do
-        :hit -> %{coordinate | guess_result: :hit}
-        :miss -> %{coordinate | guess_result: :miss}
-        _ -> coordinate
-      end
-    end
+    def designate_hit_result(coordinate, :hit), do: %{coordinate | guess_result: :hit}
+    def designate_hit_result(coordinate, :miss), do: %{coordinate | guess_result: :miss}
   end
 
   defstruct [:grid]
