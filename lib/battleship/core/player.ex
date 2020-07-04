@@ -21,7 +21,7 @@ defmodule Battleship.Core.Player do
   def ready?(player), do: player.board.ready?
 
   @spec place(player :: t(), ship :: Ship.types(), placement :: Board.placement()) ::
-          {:ok, t()} | {:error, String.t(), t()}
+          {:ok, t()} | {:error, Board.error(), t()}
   def place(player, ship, placement) do
     case Board.place(player.board, ship, placement) do
       {:ok, board} ->
