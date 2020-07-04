@@ -1,6 +1,7 @@
 defmodule Battleship.Core.GameTest do
   use ExUnit.Case
-  alias Battleship.Core.{Game, Notation, Player, PlayerNotReadyError, Ship}
+  import ExUnit.CaptureIO
+  alias Battleship.Core.{ConsoleRenderer, Game, Notation, Player, PlayerNotReadyError, Ship}
 
   def create_ready_player(player_name) do
     steps = [
@@ -44,12 +45,48 @@ defmodule Battleship.Core.GameTest do
       %{game: Game.start!(playerA, playerB)}
     end
 
-    @tag debug: true
     test "should guess", %{game: game} do
       # Player A guesses A0
       {:miss, game} = Game.guess(game, Notation.convert("A1"))
+
+      playerA_board =
+        capture_io(fn ->
+          ConsoleRenderer.render(game.player1.guess_board)
+        end)
+
+      assert playerA_board =~ """
+             🌊❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             """
+
       # Player B guesses A1
-      {:hit, _game} = Game.guess(game, Notation.convert("A2"))
+      {:hit, game} = Game.guess(game, Notation.convert("A2"))
+
+      playerB_board =
+        capture_io(fn ->
+          ConsoleRenderer.render(game.player2.guess_board)
+        end)
+
+      assert playerB_board =~ """
+             ❓❓❓❓❓❓❓❓❓❓
+             💥❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             ❓❓❓❓❓❓❓❓❓❓
+             """
     end
   end
 end

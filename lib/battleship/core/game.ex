@@ -39,21 +39,19 @@ defmodule Battleship.Core.Game do
   """
   @spec guess(game :: t(), point :: Board.point()) :: {:miss | :hit, game :: t()}
   def guess(game, point) do
-    {target_player, _current_player} = target(game)
-
-    case Player.confirm_hit(target_player, point) do
-      {:hit, _} -> {:hit, swap_turn(game)}
-      {:miss, _} -> {:miss, swap_turn(game)}
-    end
+    {target, current_player} = target(game)
+    {hit_result, target} = Player.confirm_hit(target, point)
+    current_player = Player.handle_hit_result(current_player, hit_result, point)
+    {hit_result, swap_turn(game, current_player, target)}
   end
 
-  @spec swap_turn(game :: t()) :: t()
-  def swap_turn(%{active_turn: :player1} = game) do
-    %{game | active_turn: :player2}
+  @spec swap_turn(game :: t(), current_player :: Player.t(), target :: Player.t()) :: t()
+  def swap_turn(%{active_turn: :player1} = game, current_player, target) do
+    %{game | active_turn: :player2, player1: current_player, player2: target}
   end
 
-  def swap_turn(%{active_turn: :player2} = game) do
-    %{game | active_turn: :player1}
+  def swap_turn(%{active_turn: :player2} = game, current_player, target) do
+    %{game | active_turn: :player1, player2: current_player, player1: target}
   end
 
   @spec target(game :: t()) :: {Player.t(), Player.t()}
