@@ -33,7 +33,7 @@ defmodule Battleship.Server.ServerTest do
   describe "toggle_player_ready/2" do
     test "toggles readiness", %{server: svr} do
       {:ok, player} = Agent.start(fn -> nil end)
-      {:ok, state} = Server.register_player_socket(svr, player)
+      {:ok, _state} = Server.register_player_socket(svr, player)
 
       player_struct = Player.new("test")
       {:ok, state} = Server.toggle_player_ready(svr, player, player_struct)

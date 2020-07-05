@@ -1,6 +1,6 @@
 defmodule Battleship.Core.PlayerTest do
   use ExUnit.Case
-  alias Battleship.Core.{Board, Player, Ship}
+  alias Battleship.Core.{Player, Ship}
 
   setup do
     %{player: Player.new("Example")}

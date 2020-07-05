@@ -56,8 +56,7 @@ defmodule BattleshipWeb.GameLiveTest do
 
   test "updates game proces state when ready is clicked", %{conn: conn} do
     {:ok, lv, _disconnected_html} = live(conn, "/game/bbb")
-    {lv, html} = complete_placement(lv)
-
+    {lv, _html} = complete_placement(lv)
     lv |> element("#confirm-ready") |> render_click()
   end
 end
