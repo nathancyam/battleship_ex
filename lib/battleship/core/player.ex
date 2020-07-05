@@ -8,6 +8,7 @@ defmodule Battleship.Core.Player do
   defstruct [:board, :name, :guess_board]
 
   @type hit_result :: :miss | :hit
+  @type placement_result :: {:ok, t()} | {:error, Board.error(), t()}
   @type t :: %__MODULE__{
           board: Board.t(),
           name: String.t(),
@@ -26,8 +27,8 @@ defmodule Battleship.Core.Player do
   @spec ready?(player :: t()) :: boolean()
   def ready?(player), do: player.board.ready?
 
-  @spec place(player :: t(), ship :: Ship.types(), placement :: Board.placement()) ::
-          {:ok, t()} | {:error, Board.error(), t()}
+  @spec place(player :: t(), ship :: Ship.t(), placement :: Board.placement()) ::
+          placement_result()
   def place(player, ship, placement) do
     case Board.place(player.board, ship, placement) do
       {:ok, board} ->

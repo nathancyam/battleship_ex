@@ -18,6 +18,11 @@ defmodule Battleship.Core.Ship do
     %__MODULE__{type: ship_type}
   end
 
+  def all() do
+    @valid_types
+    |> Enum.map(&new/1)
+  end
+
   @spec atom(ship :: t()) :: type_atom()
   def atom(%{type: type}), do: type
 

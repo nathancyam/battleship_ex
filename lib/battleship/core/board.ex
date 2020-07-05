@@ -37,7 +37,7 @@ defmodule Battleship.Core.Board do
   @type grid :: [Coordinate.t()]
   @type t :: %__MODULE__{
           grid: grid(),
-          positions: %{optional(Ship.types()) => [integer()]}
+          positions: %{optional(Ship.t()) => [integer()]}
         }
 
   @spec new() :: t()
@@ -61,7 +61,7 @@ defmodule Battleship.Core.Board do
   board before the placement. If the placement was valid, return the tuple with
   the updated board.
   """
-  @spec place(board :: t(), ship :: Ship.types(), placement :: placement()) ::
+  @spec place(board :: t(), ship :: Ship.t(), placement :: placement()) ::
           {:ok, t()} | {:error, error(), t()}
   def place(%__MODULE__{grid: grid, positions: positions} = board, ship, placement) do
     cond do
@@ -147,7 +147,7 @@ defmodule Battleship.Core.Board do
     {indexes_to_change, updated_grid}
   end
 
-  @spec invalid_placement_for_ship?(placement :: placement(), ship :: Ship.types()) :: boolean()
+  @spec invalid_placement_for_ship?(placement :: placement(), ship :: Ship.t()) :: boolean()
   defp invalid_placement_for_ship?(placement, ship) do
     case rotation_with_distance(placement) do
       :diagonal ->
