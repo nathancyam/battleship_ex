@@ -2,6 +2,7 @@ defmodule BattleshipWeb.GameLive do
   use BattleshipWeb, :live_view
 
   alias Battleship.Core.{Board, Player, Ship}
+  alias Battleship.Server
 
   @typep point_val :: non_neg_integer() | nil
   @typep point :: {point_val(), point_val()}
@@ -9,9 +10,13 @@ defmodule BattleshipWeb.GameLive do
 
   @empty_selection {{nil, nil}, {nil, nil}}
 
-  def mount(_params, _session, socket) do
+  def mount(%{"id" => game_id}, _session, socket) do
+    Server.Game.find_or_create_process(game_id)
+    Server.Game.register_player_socket(game_id, self())
+
     socket =
       socket
+      |> assign(:game_id, game_id)
       |> assign(:player, Player.new("Dude"))
       |> assign(:available_ships, Ship.all())
       |> assign(:selection, @empty_selection)
@@ -21,6 +26,11 @@ defmodule BattleshipWeb.GameLive do
   end
 
   def handle_event("confirm_ready", _params, socket) do
+    %{game_id: game_id} = socket.assigns
+
+    Server.Game.toggle_player_readiness(game_id, self())
+    |> IO.inspect(label: "Readiness")
+
     {:noreply, assign(socket, :ready?, true)}
   end
 

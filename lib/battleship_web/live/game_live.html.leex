@@ -11,7 +11,7 @@
 <div>
   <%= if ready?(@available_ships) do %>
   <div>
-    <button phx-click="confirm_ready">Ready</button>
+    <button id="confirm-ready" phx-click="confirm_ready">Ready</button>
   </div>
   <% else %>
   <p>Please place the following ship: <%= first_ship(@available_ships) %></p>
