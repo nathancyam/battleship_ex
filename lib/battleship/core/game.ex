@@ -39,6 +39,13 @@ defmodule Battleship.Core.Game do
     }
   end
 
+  @spec change_active_turn(game :: t()) :: t()
+  def change_active_turn(%{active_turn: :player1} = game), do:
+    %{game | active_turn: :player2}
+
+  def change_active_turn(%{active_turn: :player2} = game), do:
+    %{game | active_turn: :player1}
+
   @doc """
   For a given game, guess the position of the ship. Whose turn it is is determined
   by an internal struct.
@@ -55,6 +62,8 @@ defmodule Battleship.Core.Game do
     current_player = Player.handle_hit_result(current_player, hit_result, point)
 
     if all_destroyed? do
+      require IEx
+      IEx.pry()
       {:game_over, current_player, finish_game(game, current_player, target)}
     else
       {:continue, hit_result, swap_turn(game, current_player, target)}
@@ -63,20 +72,20 @@ defmodule Battleship.Core.Game do
 
   @spec swap_turn(game :: t(), current_player :: Player.t(), target :: Player.t()) :: t()
   defp swap_turn(%{active_turn: :player1} = game, current_player, target) do
-    %{game | active_turn: :player2, player1: current_player, player2: target}
+    %{change_active_turn(game) | player1: current_player, player2: target}
   end
 
   defp swap_turn(%{active_turn: :player2} = game, current_player, target) do
-    %{game | active_turn: :player1, player2: current_player, player1: target}
+    %{change_active_turn(game) | player2: current_player, player1: target}
   end
 
   @spec finish_game(game :: t(), winner :: Player.t(), loser :: Player.t()) :: t()
   defp finish_game(%{active_turn: :player1} = game, winner, loser) do
-    %{game | player1: winner, player2: loser, over?: true}
+    %{game | player1: winner, player2: loser, over?: true, active_turn: :player1}
   end
 
   defp finish_game(%{active_turn: :player2} = game, winner, loser) do
-    %{game | player2: winner, player1: loser, over?: true}
+    %{game | player2: winner, player1: loser, over?: true, active_turn: :player2}
   end
 
   @spec target(game :: t()) :: {Player.t(), Player.t()}

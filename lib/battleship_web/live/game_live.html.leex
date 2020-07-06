@@ -1,5 +1,13 @@
 <h1>Hi!</h1>
 
+<%= unless is_nil(@winner?) do %>
+  <%= if @winner? do %>
+    <h2>You win!</h2>
+  <% else %>
+    <h2>You lose!</h2>
+  <% end %>
+<% end %>
+
 <div>
   <ul>
   <%= for ship <- @available_ships do %>
@@ -32,7 +40,7 @@
   <%= for line <- board_by_line(@player, :guess) do %>
     <div>
     <%= for tile <- line do %>
-      <div id="tile-<%= tile.row %>-<%= tile.column %>" class="tile" phx-click="guess" phx-value-row="<%= tile.row %>" phx-value-column="<%= tile.column %>">
+      <div id="guess-<%= tile.row %>-<%= tile.column %>" class="tile" phx-click="guess" phx-value-row="<%= tile.row %>" phx-value-column="<%= tile.column %>">
         <%= to_emoji(tile, @selection) %>
       </div>
     <% end %>

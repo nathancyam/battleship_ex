@@ -2,24 +2,25 @@ defmodule BattleshipWeb.GameLiveTest do
   use BattleshipWeb.ConnCase
 
   import Phoenix.LiveViewTest
+  import Battleship.GameSetup
 
   def complete_placement(lv) do
     tile_selectors = [
       # Patrol boat
-      "0-1",
-      "0-2",
+      "4-6",
+      "4-7",
       # Sub
-      "1-2",
-      "1-3",
+      "9-4",
+      "8-4",
       # Destroyer,
-      "2-3",
-      "2-5",
+      "2-2",
+      "2-4",
       # Battleship
-      "3-5",
-      "3-8",
+      "5-4",
+      "5-1",
       # Carrier
-      "5-0",
-      "5-4"
+      "0-1",
+      "0-5"
     ]
 
     for tile <- tile_selectors, selector = "#tile-#{tile}", reduce: {lv, ""} do
@@ -58,5 +59,49 @@ defmodule BattleshipWeb.GameLiveTest do
     {:ok, lv, _disconnected_html} = live(conn, "/game/bbb")
     {lv, _html} = complete_placement(lv)
     lv |> element("#confirm-ready") |> render_click()
+  end
+
+  describe "game playthough" do
+    setup do
+      %{player1_conn: build_conn(), player2_conn: build_conn()}
+    end
+
+    test "runs through a game with player 2 winning", %{
+      player1_conn: player1_conn,
+      player2_conn: player2_conn
+    } do
+      {:ok, player1, _} = live(player1_conn, "/game/zzz")
+      {:ok, player2, _} = live(player2_conn, "/game/zzz")
+
+      {player1, _} = complete_placement(player1)
+      {player2, _} = complete_placement(player2)
+
+      waiting_html = player1 |> element("#confirm-ready") |> render_click()
+      refute waiting_html =~ "guess-"
+      ready_html = player2 |> element("#confirm-ready") |> render_click()
+      assert ready_html =~ "guess-"
+
+      to_tile = fn {x, y} -> "#guess-#{x}-#{y}" end
+
+      perfect =
+        perfect_selection()
+        |> Enum.map(to_tile)
+
+      close =
+        close_selection()
+        |> Enum.map(to_tile)
+
+      {player2_html, player1_html} =
+        Enum.zip(perfect, close)
+        |> Enum.reduce({"", ""}, fn {tile1, tile2}, _ ->
+          {player2 |> element(tile1) |> render_click(),
+           player1 |> element(tile2) |> render_click()}
+        end)
+
+      assert player2_html =~ "You win!"
+      refute player2_html =~ "You lose!"
+      assert player1_html =~ "You lose!"
+      refute player1_html =~ "You win!"
+    end
   end
 end
