@@ -1,4 +1,6 @@
-defmodule Battleship.Server.PlayerStatus do
+defmodule Battleship.Setup.PlayerStatus do
+  alias Battleship.Core.Player
+
   defstruct [:pid, :ready?, :player]
 
   @type t :: %__MODULE__{

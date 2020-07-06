@@ -1,8 +1,8 @@
-defmodule Battleship.Server do
+defmodule Battleship.Setup do
   use GenServer, restart: :transient
 
-  alias Battleship.Core.Player
-  alias Battleship.Server.State
+  alias Battleship.Core.{Game, Player}
+  alias Battleship.Setup.State
 
   require Logger
 

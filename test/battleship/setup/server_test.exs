@@ -1,10 +1,10 @@
-defmodule Battleship.Server.ServerTest do
+defmodule Battleship.Setup.ServerTest do
   use ExUnit.Case
-  alias Battleship.Server
+  alias Battleship.Setup
   alias Battleship.Core.Player
 
   setup do
-    {:ok, pid} = Server.start_link("game_id")
+    {:ok, pid} = Setup.start_link("game_id")
     assert Process.alive?(pid)
     %{server: pid}
   end
@@ -21,11 +21,11 @@ defmodule Battleship.Server.ServerTest do
       {:ok, player} = Agent.start(fn -> nil end)
       {:ok, player2} = Agent.start(fn -> nil end)
 
-      {:ok, state} = Server.register_player_socket(svr, player)
+      {:ok, state} = Setup.register_player_socket(svr, player)
       refute state.player1 == nil
       assert state.player2 == nil
 
-      {:ok, state} = Server.register_player_socket(svr, player2)
+      {:ok, state} = Setup.register_player_socket(svr, player2)
       refute state.player2 == nil
     end
   end
@@ -33,10 +33,10 @@ defmodule Battleship.Server.ServerTest do
   describe "toggle_player_ready/2" do
     test "toggles readiness", %{server: svr} do
       {:ok, player} = Agent.start(fn -> nil end)
-      {:ok, _state} = Server.register_player_socket(svr, player)
+      {:ok, _state} = Setup.register_player_socket(svr, player)
 
       player_struct = Player.new("test")
-      {:ok, state, _} = Server.toggle_player_ready(svr, player, player_struct)
+      {:ok, state, _} = Setup.toggle_player_ready(svr, player, player_struct)
       assert state.player1.ready?
     end
   end

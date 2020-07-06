@@ -2,7 +2,7 @@ defmodule BattleshipWeb.GameLive do
   use BattleshipWeb, :live_view
 
   alias Battleship.Core.{Board, GuessBoard, Player, Ship}
-  alias Battleship.Server
+  alias Battleship.Setup
 
   @typep point_val :: non_neg_integer() | nil
   @typep point :: {point_val(), point_val()}
@@ -12,8 +12,8 @@ defmodule BattleshipWeb.GameLive do
 
   def mount(%{"id" => game_id}, _session, socket) do
     if connected?(socket) do
-      Server.Game.find_or_create_process(game_id)
-      Server.Game.register_player_socket(game_id, self())
+      Setup.Game.find_or_create_process(game_id)
+      Setup.Game.register_player_socket(game_id, self())
     end
 
     socket =
@@ -34,7 +34,7 @@ defmodule BattleshipWeb.GameLive do
     %{game_id: game_id, player: player} = socket.assigns
 
     new_socket =
-      Server.Game.toggle_player_readiness(game_id, self(), player)
+      Setup.Game.toggle_player_readiness(game_id, self(), player)
       |> handle_readiness(socket)
 
     {:noreply, new_socket}
@@ -171,11 +171,11 @@ defmodule BattleshipWeb.GameLive do
   defp do_placement(player, ships, selection), do: {ships, player, selection}
 
   @spec handle_readiness(
-          res :: {:ok, Server.State.t(), pid()} | :not_started,
+          res :: {:ok, Setup.State.t(), pid()} | :not_started,
           socket :: Phoenix.LiveView.Socket.t()
         ) :: Phoenix.LiveView.Socket.t()
   defp handle_readiness({:ok, state, game_pid}, socket) do
-    if Server.State.game_ready?(state) do
+    if Setup.State.game_ready?(state) do
       do_game_setup(game_pid, socket)
     else
       assign(socket, :ready?, !socket.assigns.ready?)
@@ -189,7 +189,7 @@ defmodule BattleshipWeb.GameLive do
   @spec do_game_setup(game_pid :: pid(), socket :: Phoenix.LiveView.Socket.t()) ::
           Phoenix.LiveView.Socket.t()
   defp do_game_setup(game_pid, socket) do
-    {game, player1, player2} = Server.start_game(game_pid)
+    {game, player1, player2} = Setup.start_game(game_pid)
 
     assigns =
       case {player1, player2} do

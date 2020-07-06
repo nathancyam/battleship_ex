@@ -1,5 +1,5 @@
-defmodule Battleship.Server.Game do
-  alias Battleship.{GameSupervisor, Server}
+defmodule Battleship.Setup.Game do
+  alias Battleship.{GameSupervisor, Setup}
   alias Battleship.Core.Player
 
   @spec find_or_create_process(game_id :: String.t()) :: pid()
@@ -25,20 +25,20 @@ defmodule Battleship.Server.Game do
         :not_started
 
       pid when is_pid(pid) ->
-        Server.register_player_socket(pid, socket_pid)
+        Setup.register_player_socket(pid, socket_pid)
         :ok
     end
   end
 
   @spec toggle_player_readiness(game_id :: String.t(), socket_pid :: pid(), player :: Player.t()) ::
-          :not_started | {:ok, Battleship.Server.State.t(), pid()}
+          :not_started | {:ok, Setup.State.t(), pid()}
   def toggle_player_readiness(game_id, socket_pid, player) do
     case find_process(game_id) do
       nil ->
         :not_started
 
       pid when is_pid(pid) ->
-        Server.toggle_player_ready(pid, socket_pid, player)
+        Setup.toggle_player_ready(pid, socket_pid, player)
     end
   end
 end

@@ -1,14 +1,14 @@
 defmodule Battleship.GameSupervisor do
   use DynamicSupervisor
 
-  alias Battleship.Server
+  alias Battleship.Setup
 
   def start_link(_) do
     DynamicSupervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
   def start_game(game_id) do
-    DynamicSupervisor.start_child(__MODULE__, {Server, game_id})
+    DynamicSupervisor.start_child(__MODULE__, {Setup, game_id})
   end
 
   def init(:ok) do

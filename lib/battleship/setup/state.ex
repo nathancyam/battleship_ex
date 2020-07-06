@@ -1,8 +1,8 @@
-defmodule Battleship.Server.State do
+defmodule Battleship.Setup.State do
   require Logger
 
   alias Battleship.Core.{Player, Game}
-  alias Battleship.Server.PlayerStatus
+  alias Battleship.Setup.PlayerStatus
 
   defstruct [:player1, :player2, :game]
 

@@ -1,6 +1,6 @@
-defmodule Battleship.Server.StateTest do
+defmodule Battleship.Setup.StateTest do
   use ExUnit.Case
-  alias Battleship.Server.State
+  alias Battleship.Setup.State
 
   describe "add_player/2" do
     setup do
