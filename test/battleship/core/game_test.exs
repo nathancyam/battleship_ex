@@ -2,7 +2,7 @@ defmodule Battleship.Core.GameTest do
   use ExUnit.Case
   import ExUnit.CaptureIO
   import Battleship.GameSetup
-  alias Battleship.Core.{ConsoleRenderer, Game, Notation, Player, PlayerNotReadyError, Ship}
+  alias Battleship.Core.{ConsoleRenderer, Game, Notation, Player, PlayerNotReadyError}
 
   describe "start!/2" do
     test "fails when player A is not ready" do
