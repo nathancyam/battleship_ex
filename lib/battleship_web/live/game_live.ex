@@ -32,8 +32,12 @@ defmodule BattleshipWeb.GameLive do
 
   def handle_event("confirm_ready", _params, socket) do
     %{game_id: game_id, player: player} = socket.assigns
-    Server.Game.toggle_player_readiness(game_id, self(), player)
-    {:noreply, assign(socket, :ready?, true)}
+
+    new_socket =
+      Server.Game.toggle_player_readiness(game_id, self(), player)
+      |> handle_readiness(socket)
+
+    {:noreply, new_socket}
   end
 
   def handle_event("tile", %{"row" => row, "column" => column}, socket) do
@@ -165,4 +169,40 @@ defmodule BattleshipWeb.GameLive do
   end
 
   defp do_placement(player, ships, selection), do: {ships, player, selection}
+
+  @spec handle_readiness(
+          res :: {:ok, Server.State.t(), pid()} | :not_started,
+          socket :: Phoenix.LiveView.Socket.t()
+        ) :: Phoenix.LiveView.Socket.t()
+  defp handle_readiness({:ok, state, game_pid}, socket) do
+    if Server.State.game_ready?(state) do
+      do_game_setup(game_pid, socket)
+    else
+      assign(socket, :ready?, !socket.assigns.ready?)
+    end
+  end
+
+  defp handle_readiness(_, socket) do
+    assign(socket, :ready?, !socket.assigns.ready?)
+  end
+
+  @spec do_game_setup(game_pid :: pid(), socket :: Phoenix.LiveView.Socket.t()) ::
+          Phoenix.LiveView.Socket.t()
+  defp do_game_setup(game_pid, socket) do
+    {game, player1, player2} = Server.start_game(game_pid)
+
+    assigns =
+      case {player1, player2} do
+        {player1, player2} when player1 == self() ->
+          [player: game.player1, designation: :player1, opponent: player2]
+
+        {player1, player2} when player2 == self() ->
+          [player: game.player2, designation: :player2, opponent: player1]
+      end
+
+    socket
+    |> assign(:ready?, true)
+    |> assign(:game, game)
+    |> assign(assigns)
+  end
 end

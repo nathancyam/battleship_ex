@@ -31,7 +31,7 @@ defmodule Battleship.Server.Game do
   end
 
   @spec toggle_player_readiness(game_id :: String.t(), socket_pid :: pid(), player :: Player.t()) ::
-          :not_started | {:ok, Server.State.t()}
+          :not_started | {:ok, Battleship.Server.State.t(), pid()}
   def toggle_player_readiness(game_id, socket_pid, player) do
     case find_process(game_id) do
       nil ->

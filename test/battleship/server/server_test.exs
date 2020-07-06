@@ -36,7 +36,7 @@ defmodule Battleship.Server.ServerTest do
       {:ok, _state} = Server.register_player_socket(svr, player)
 
       player_struct = Player.new("test")
-      {:ok, state} = Server.toggle_player_ready(svr, player, player_struct)
+      {:ok, state, _} = Server.toggle_player_ready(svr, player, player_struct)
       assert state.player1.ready?
     end
   end
