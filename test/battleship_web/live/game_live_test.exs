@@ -66,6 +66,29 @@ defmodule BattleshipWeb.GameLiveTest do
       %{player1_conn: build_conn(), player2_conn: build_conn()}
     end
 
+    test "shows error message informing placement can not occur mid game", %{
+      player1_conn: player1_conn,
+      player2_conn: player2_conn
+    } do
+      {:ok, player1, _} = live(player1_conn, "/game/bzz")
+      {:ok, player2, _} = live(player2_conn, "/game/bzz")
+
+      {player1, _} = complete_placement(player1)
+      {player2, _} = complete_placement(player2)
+
+      waiting_html = player1 |> element("#confirm-ready") |> render_click()
+      refute waiting_html =~ "guess-"
+      ready_html = player2 |> element("#confirm-ready") |> render_click()
+      assert ready_html =~ "guess-"
+
+      player2 |> element("#guess-1-0") |> render_click()
+
+      error_html =
+        player2 |> element("#tile-8-8") |> render_click()
+
+      assert error_html =~ "Can not place ships while game is active!"
+    end
+
     test "stops users from spam guessing", %{
       player1_conn: player1_conn,
       player2_conn: player2_conn

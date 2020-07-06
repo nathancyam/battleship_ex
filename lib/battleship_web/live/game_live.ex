@@ -46,36 +46,44 @@ defmodule BattleshipWeb.GameLive do
   end
 
   def handle_event("tile", %{"row" => row, "column" => column}, socket) do
-    %{selection: selection, available_ships: ships, player: player} = socket.assigns
+    new_socket =
+      if can_place?(socket) do
+        %{selection: selection, available_ships: ships, player: player} = socket.assigns
 
-    tuple = {String.to_integer(row), String.to_integer(column)}
-    empty = {nil, nil}
+        tuple = {String.to_integer(row), String.to_integer(column)}
+        empty = {nil, nil}
 
-    new_selection =
-      case selection do
-        {^empty, ^empty} ->
-          {tuple, empty}
+        new_selection =
+          case selection do
+            {^empty, ^empty} ->
+              {tuple, empty}
 
-        {^tuple, ^empty} ->
-          {empty, empty}
+            {^tuple, ^empty} ->
+              {empty, empty}
 
-        {existing, ^empty} ->
-          {existing, tuple}
+            {existing, ^empty} ->
+              {existing, tuple}
 
-        {existing, ^tuple} ->
-          {existing, empty}
+            {existing, ^tuple} ->
+              {existing, empty}
 
-        _ ->
-          selection
+            _ ->
+              selection
+          end
+
+        {ships_to_place, updated_player, new_selection} =
+          do_placement(player, ships, new_selection)
+
+        socket
+        |> assign(:selection, new_selection)
+        |> assign(:available_ships, ships_to_place)
+        |> assign(:player, updated_player)
+      else
+        socket
+        |> assign(:error_msg, "Can not place ships while game is active!")
       end
 
-    {ships_to_place, updated_player, new_selection} = do_placement(player, ships, new_selection)
-
-    {:noreply,
-     socket
-     |> assign(:selection, new_selection)
-     |> assign(:available_ships, ships_to_place)
-     |> assign(:player, updated_player)}
+    {:noreply, new_socket}
   end
 
   def handle_event("guess", %{"row" => row, "column" => column}, socket) do
@@ -165,6 +173,8 @@ defmodule BattleshipWeb.GameLive do
     end
   end
 
+  def can_place?(%{assigns: %{game: game}}), do: is_nil(game)
+
   @spec can_guess?(socket :: Phoenix.LiveView.Socket.t()) :: boolean()
   def can_guess?(socket) do
     %{game: game, designation: des} = socket.assigns
@@ -203,6 +213,7 @@ defmodule BattleshipWeb.GameLive do
     end
   end
 
+  @spec invert_designation(atom()) :: atom()
   defp invert_designation(:player1), do: :player2
   defp invert_designation(:player2), do: :player1
 
