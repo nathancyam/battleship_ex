@@ -40,11 +40,9 @@ defmodule Battleship.Core.Game do
   end
 
   @spec change_active_turn(game :: t()) :: t()
-  def change_active_turn(%{active_turn: :player1} = game), do:
-    %{game | active_turn: :player2}
+  def change_active_turn(%{active_turn: :player1} = game), do: %{game | active_turn: :player2}
 
-  def change_active_turn(%{active_turn: :player2} = game), do:
-    %{game | active_turn: :player1}
+  def change_active_turn(%{active_turn: :player2} = game), do: %{game | active_turn: :player1}
 
   @doc """
   For a given game, guess the position of the ship. Whose turn it is is determined
@@ -62,8 +60,6 @@ defmodule Battleship.Core.Game do
     current_player = Player.handle_hit_result(current_player, hit_result, point)
 
     if all_destroyed? do
-      require IEx
-      IEx.pry()
       {:game_over, current_player, finish_game(game, current_player, target)}
     else
       {:continue, hit_result, swap_turn(game, current_player, target)}

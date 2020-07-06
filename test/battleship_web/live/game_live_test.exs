@@ -66,6 +66,35 @@ defmodule BattleshipWeb.GameLiveTest do
       %{player1_conn: build_conn(), player2_conn: build_conn()}
     end
 
+    test "stops users from spam guessing", %{
+      player1_conn: player1_conn,
+      player2_conn: player2_conn
+    } do
+      {:ok, player1, _} = live(player1_conn, "/game/azz")
+      {:ok, player2, _} = live(player2_conn, "/game/azz")
+
+      {player1, _} = complete_placement(player1)
+      {player2, _} = complete_placement(player2)
+
+      waiting_html = player1 |> element("#confirm-ready") |> render_click()
+      refute waiting_html =~ "guess-"
+      ready_html = player2 |> element("#confirm-ready") |> render_click()
+      assert ready_html =~ "guess-"
+
+      player2 |> element("#guess-1-0") |> render_click()
+
+      error_html =
+        player2 |> element("#guess-1-0") |> render_click()
+
+      assert error_html =~ "Not your turn!"
+      player1 |> element("#guess-3-3") |> render_click()
+
+      no_error_html =
+        player2 |> render()
+
+      refute no_error_html =~ "Not your turn!"
+    end
+
     test "runs through a game with player 2 winning", %{
       player1_conn: player1_conn,
       player2_conn: player2_conn

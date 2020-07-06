@@ -27,6 +27,8 @@ defmodule BattleshipWeb.GameLive do
       |> assign(:designation, nil)
       |> assign(:game, nil)
       |> assign(:opponent, nil)
+      |> assign(:hit_or_miss, nil)
+      |> assign(:error_msg, nil)
 
     {:ok, socket}
   end
@@ -75,34 +77,23 @@ defmodule BattleshipWeb.GameLive do
   end
 
   def handle_event("guess", %{"row" => row, "column" => column}, socket) do
-    %{game: game, designation: des} = socket.assigns
-    tuple = {String.to_integer(row), String.to_integer(column)}
+    if can_guess?(socket) do
+      tuple = {String.to_integer(row), String.to_integer(column)}
 
-    get_player = &Map.get(&1, des)
-
-    new_socket =
-      case Game.guess(game, tuple) do
-        {:continue, _hit_or_miss, updated_game} ->
-          socket
-          |> assign(:game, updated_game)
-          |> assign(:player, get_player.(updated_game))
-
-        {:game_over, winner, updated_game} ->
-          player = get_player.(updated_game)
-
-          socket
-          |> assign(:game, updated_game)
-          |> assign(:winner?, player == winner)
-          |> assign(:player, player)
-      end
-
-    {:noreply, notify_opponent_of_game_change(new_socket)}
+      {:noreply,
+       socket
+       |> do_guess(tuple)
+       |> notify_opponent_of_game_change()}
+    else
+      {:noreply, assign(socket, :error_msg, "Not your turn!")}
+    end
   end
 
   def board_by_line(player, :board), do: Enum.chunk_every(player.board.grid, 10)
   def board_by_line(player, :guess), do: Enum.chunk_every(player.guess_board.grid, 10)
 
-  @spec notify_opponent_of_game_change(socket :: Phoenix.LiveView.Socket.t()) :: Phoenix.LiveView.Socket.t()
+  @spec notify_opponent_of_game_change(socket :: Phoenix.LiveView.Socket.t()) ::
+          Phoenix.LiveView.Socket.t()
   def notify_opponent_of_game_change(socket) do
     %{opponent: opponent, game: game, designation: des} = socket.assigns
     GenServer.call(opponent, {:receive_from_opponent, game, self(), des})
@@ -113,10 +104,11 @@ defmodule BattleshipWeb.GameLive do
     whoami = invert_designation(from)
 
     default_assigns = [
-       designation: whoami,
-       player: Map.get(game, whoami),
-       game: game,
-       opponent: opponent_process
+      designation: whoami,
+      player: Map.get(game, whoami),
+      game: game,
+      error_msg: nil,
+      opponent: opponent_process
     ]
 
     if game.over? do
@@ -131,10 +123,10 @@ defmodule BattleshipWeb.GameLive do
     end
   end
 
-  def first_ship(available_ships) do
-    List.first(available_ships)
-    |> Map.get(:type)
-  end
+  def first_ship(available_ships),
+    do:
+      List.first(available_ships)
+      |> Map.get(:type)
 
   def ready?(available_ships), do: Enum.count(available_ships) == 0
 
@@ -168,6 +160,41 @@ defmodule BattleshipWeb.GameLive do
 
       %Board.Coordinate{occupied_by: _ship} ->
         "🚢"
+    end
+  end
+
+  @spec can_guess?(socket :: Phoenix.LiveView.Socket.t()) :: boolean()
+  def can_guess?(socket) do
+    %{game: game, designation: des} = socket.assigns
+    game.active_turn == des
+  end
+
+  @spec do_guess(
+          socket :: Phoenix.LiveView.Socket.t(),
+          guess_type :: {non_neg_integer(), non_neg_integer()}
+        ) :: Phoenix.LiveView.Socket.t()
+  defp do_guess(socket, guess_tuple) do
+    %{game: game, designation: des} = socket.assigns
+    get_player = &Map.get(&1, des)
+
+    case Game.guess(game, guess_tuple) do
+      {:continue, hit_or_miss, updated_game} ->
+        socket
+        |> assign(:game, updated_game)
+        |> assign(:player, get_player.(updated_game))
+        |> assign(:hit_or_miss, if hit_or_miss == :hit do
+          "You hit a target!"
+        else
+          "You missed!"
+        end)
+
+      {:game_over, winner, updated_game} ->
+        player = get_player.(updated_game)
+
+        socket
+        |> assign(:game, updated_game)
+        |> assign(:winner?, player == winner)
+        |> assign(:player, player)
     end
   end
 
@@ -205,8 +232,7 @@ defmodule BattleshipWeb.GameLive do
     end
   end
 
-  defp handle_readiness(_, socket), do:
-    assign(socket, :ready?, !socket.assigns.ready?)
+  defp handle_readiness(_, socket), do: assign(socket, :ready?, !socket.assigns.ready?)
 
   @spec do_game_setup(game_pid :: pid(), socket :: Phoenix.LiveView.Socket.t()) ::
           Phoenix.LiveView.Socket.t()
@@ -219,7 +245,12 @@ defmodule BattleshipWeb.GameLive do
           [player: game.player1, designation: :player1, opponent: player2, game: game]
 
         {player1, player2} when player2 == self() ->
-          [player: game.player2, designation: :player2, opponent: player1, game: Game.change_active_turn(game)]
+          [
+            player: game.player2,
+            designation: :player2,
+            opponent: player1,
+            game: Game.change_active_turn(game)
+          ]
       end
 
     socket

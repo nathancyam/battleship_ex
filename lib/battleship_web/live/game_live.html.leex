@@ -8,6 +8,14 @@
   <% end %>
 <% end %>
 
+<%= unless is_nil(@hit_or_miss) do %>
+  <h3><%= @hit_or_miss %></h3>
+<% end %>
+
+<%= unless is_nil(@error_msg) do %>
+  <span><%= @error_msg %></span>
+<% end %>
+
 <div>
   <ul>
   <%= for ship <- @available_ships do %>
