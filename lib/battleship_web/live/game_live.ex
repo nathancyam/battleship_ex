@@ -18,17 +18,19 @@ defmodule BattleshipWeb.GameLive do
 
     socket =
       socket
-      |> assign(:game_id, game_id)
-      |> assign(:player, Player.new("Dude"))
-      |> assign(:available_ships, Ship.all())
-      |> assign(:selection, @empty_selection)
-      |> assign(:ready?, false)
-      |> assign(:winner?, nil)
-      |> assign(:designation, nil)
-      |> assign(:game, nil)
-      |> assign(:opponent, nil)
-      |> assign(:hit_or_miss, nil)
-      |> assign(:error_msg, nil)
+      |> assign(
+        game_id: game_id,
+        player: Player.new("Dude"),
+        available_ships: Ship.all(),
+        selection: @empty_selection,
+        ready?: false,
+        winner?: nil,
+        designation: nil,
+        game: nil,
+        opponent: nil,
+        hit_or_miss: nil,
+        error_msg: nil
+      )
 
     {:ok, socket}
   end
@@ -182,11 +184,14 @@ defmodule BattleshipWeb.GameLive do
         socket
         |> assign(:game, updated_game)
         |> assign(:player, get_player.(updated_game))
-        |> assign(:hit_or_miss, if hit_or_miss == :hit do
-          "You hit a target!"
-        else
-          "You missed!"
-        end)
+        |> assign(
+          :hit_or_miss,
+          if hit_or_miss == :hit do
+            "You hit a target!"
+          else
+            "You missed!"
+          end
+        )
 
       {:game_over, winner, updated_game} ->
         player = get_player.(updated_game)

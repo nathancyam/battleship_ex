@@ -83,14 +83,12 @@ defmodule BattleshipWeb.GameLiveTest do
 
       player2 |> element("#guess-1-0") |> render_click()
 
-      error_html =
-        player2 |> element("#guess-1-0") |> render_click()
+      error_html = player2 |> element("#guess-1-0") |> render_click()
 
       assert error_html =~ "Not your turn!"
       player1 |> element("#guess-3-3") |> render_click()
 
-      no_error_html =
-        player2 |> render()
+      no_error_html = player2 |> render()
 
       refute no_error_html =~ "Not your turn!"
     end
