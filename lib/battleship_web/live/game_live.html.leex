@@ -34,24 +34,8 @@
   <% end %>
 </div>
 
-<%= for line <- board_by_line(@player, :board) do %>
-  <div>
-  <%= for tile <- line do %>
-    <div id="tile-<%= tile.row %>-<%= tile.column %>" class="tile" phx-click="tile" phx-value-row="<%= tile.row %>" phx-value-column="<%= tile.column %>">
-      <%= to_emoji(tile, @selection) %>
-    </div>
-  <% end %>
-  </div>
-<% end %>
+<%= live_component @socket, BoardLiveComponent, board: board_by_line(@player, :board), selection: @selection, action: "tile" %>
 
 <%= unless is_nil(@game) do %>
-  <%= for line <- board_by_line(@player, :guess) do %>
-    <div>
-    <%= for tile <- line do %>
-      <div id="guess-<%= tile.row %>-<%= tile.column %>" class="tile" phx-click="guess" phx-value-row="<%= tile.row %>" phx-value-column="<%= tile.column %>">
-        <%= to_emoji(tile, @selection) %>
-      </div>
-    <% end %>
-    </div>
-  <% end %>
+  <%= live_component @socket, BoardLiveComponent, board: board_by_line(@player, :guess), selection: @selection, action: "guess" %>
 <% end %>

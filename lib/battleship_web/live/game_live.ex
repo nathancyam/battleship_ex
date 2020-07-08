@@ -1,7 +1,8 @@
 defmodule BattleshipWeb.GameLive do
   use BattleshipWeb, :live_view
 
-  alias Battleship.Core.{Board, Game, GuessBoard, Player, Ship}
+  alias BattleshipWeb.BoardLiveComponent
+  alias Battleship.Core.{Game, Player, Ship}
   alias Battleship.Setup
 
   @typep point_val :: non_neg_integer() | nil
@@ -139,39 +140,6 @@ defmodule BattleshipWeb.GameLive do
       |> Map.get(:type)
 
   def ready?(available_ships), do: Enum.count(available_ships) == 0
-
-  def to_emoji(item, selection) do
-    {{start_x, start_y}, {end_x, end_y}} = selection
-
-    case item do
-      %GuessBoard.Coordinate{guess_result: :hit} ->
-        "💥"
-
-      %GuessBoard.Coordinate{guess_result: :miss} ->
-        "🌊"
-
-      %GuessBoard.Coordinate{guess_result: :unknown} ->
-        "❓"
-
-      %Board.Coordinate{row: ^start_x, column: ^start_y} ->
-        "⭕"
-
-      %Board.Coordinate{row: ^end_x, column: ^end_y} ->
-        "⭕"
-
-      %Board.Coordinate{occupied_by: nil, hit?: false} ->
-        "🌊"
-
-      %Board.Coordinate{occupied_by: nil, hit?: true} ->
-        "❌"
-
-      %Board.Coordinate{occupied_by: _ship, hit?: true} ->
-        "💥"
-
-      %Board.Coordinate{occupied_by: _ship} ->
-        "🚢"
-    end
-  end
 
   def can_place?(%{assigns: %{game: game}}), do: is_nil(game)
 
