@@ -100,8 +100,8 @@ defmodule BattleshipWeb.GameLive do
     end
   end
 
-  def board_by_line(player, :board), do: Enum.chunk_every(player.board.grid, 10)
-  def board_by_line(player, :guess), do: Enum.chunk_every(player.guess_board.grid, 10)
+  def board_by_line(player, :board), do: Enum.chunk_every(player.board.grid, 10) |> Enum.with_index()
+  def board_by_line(player, :guess), do: Enum.chunk_every(player.guess_board.grid, 10) |> Enum.with_index()
 
   @spec notify_opponent_of_game_change(socket :: Phoenix.LiveView.Socket.t()) ::
           Phoenix.LiveView.Socket.t()

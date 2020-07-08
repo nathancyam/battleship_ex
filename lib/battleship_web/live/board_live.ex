@@ -5,10 +5,10 @@ defmodule BattleshipWeb.BoardLiveComponent do
 
   def render(assigns) do
     ~L"""
-    <%= for line <- @board do %>
-      <div>
+    <%= for {line, count} <- @board do %>
+      <div id="<%= line_id(@action, count) %>" phx-update="replace">
       <%= for tile <- line do %>
-        <div id="<%= tile_id(@action, tile) %>" class="tile" phx-click="<%= @action %>" phx-value-row="<%= tile.row %>" phx-value-column="<%= tile.column %>">
+        <div id="<%= tile_id(@action, tile) %>" class="tile" phx-click="<%= @action %>" phx-value-row="<%= tile.row %>" phx-value-column="<%= tile.column %>" phx-update="replace">
           <%= to_emoji(tile, @selection) %>
         </div>
       <% end %>
@@ -17,9 +17,9 @@ defmodule BattleshipWeb.BoardLiveComponent do
     """
   end
 
-  def tile_id(action, tile) do
-    "#{action}-#{tile.row}-#{tile.column}"
-  end
+  def tile_id(action, tile), do: "#{action}-#{tile.row}-#{tile.column}"
+
+  def line_id(action, line), do: "#{action}-line-#{line}"
 
   def to_emoji(item, selection) do
     {{start_x, start_y}, {end_x, end_y}} = selection
