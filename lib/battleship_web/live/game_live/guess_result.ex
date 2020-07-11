@@ -1,5 +1,5 @@
 defmodule BattleshipWeb.GameLive.GuessResult do
-  import Phoenix.LiveView, only: [assign: 3, send_update: 2]
+  import Phoenix.LiveView, only: [send_update: 2]
 
   alias Phoenix.LiveView.Socket
   alias Battleship.Core.{ConsoleRenderer, Player}

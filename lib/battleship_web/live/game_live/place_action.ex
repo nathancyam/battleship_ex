@@ -4,7 +4,7 @@ defmodule BattleshipWeb.GameLive.PlaceAction do
   import Phoenix.LiveView, only: [assign: 3, send_update: 2]
 
   alias Phoenix.LiveView.Socket
-  alias Battleship.Core.{Board, Player, Ship}
+  alias Battleship.Core.{Player, Ship}
   alias BattleshipWeb.TileLiveComponent
 
   @typep point_val :: non_neg_integer() | nil
@@ -18,8 +18,8 @@ defmodule BattleshipWeb.GameLive.PlaceAction do
 
   @spec place(tile_selection :: map(), from :: String.t(), socket :: Socket.t()) :: Socket.t()
   def place(%{"row" => _row, "column" => _column} = tile_selection, from, socket) do
-    %{selection: selection, available_ships: ships, player: player} = socket.assigns
-    {old_selection, selection, unselect?} = create_selection(tile_selection, socket)
+    %{available_ships: ships, player: player} = socket.assigns
+    {_old_selection, selection, unselect?} = create_selection(tile_selection, socket)
 
     {ships_to_place, tiles_changed, updated_player, new_selection} =
       do_placement(player, ships, selection)

@@ -9,7 +9,7 @@ defmodule BattleshipWeb.TileLiveComponent do
     """
   end
 
-  def handle_event(action, %{"row" => row, "column" => column}, socket) do
+  def handle_event(_action, %{"row" => row, "column" => column}, socket) do
     send(
       self(),
       {:tile, socket.assigns.action, socket.assigns.id,
