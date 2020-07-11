@@ -43,8 +43,12 @@ defmodule Battleship.Setup do
     Process.monitor(player_socket)
 
     case State.add_player(state, player_socket) do
-      {:ok, state} = res ->
-        {:reply, res, state}
+      {:ok, new_state} = res ->
+        if state.player2 == nil and new_state.player2 != nil do
+          {:reply, res, new_state, {:continue, :player_joined}}
+        else
+          {:reply, res, new_state}
+        end
 
       {:error, :game_full, state} = res ->
         {:reply, res, state}
@@ -54,6 +58,11 @@ defmodule Battleship.Setup do
   def handle_call({:toggle_player_ready, player_socket, player}, _from, state) do
     new_state = State.toggle_readiness(state, player_socket, player)
     {:reply, {:ok, new_state}, new_state}
+  end
+
+  def handle_continue(:player_joined, state) do
+    State.dispatch_player_joined(state)
+    {:noreply, state}
   end
 
   def handle_info({:DOWN, _ref, :process, down_player, _reason}, state) do

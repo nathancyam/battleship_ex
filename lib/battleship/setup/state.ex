@@ -51,13 +51,30 @@ defmodule Battleship.Setup.State do
     |> (&struct(__MODULE__, &1)).()
   end
 
+  @spec dispatch_player_joined(state :: t()) :: :ok
+  def dispatch_player_joined(%{player1: player1, player2: player2}) do
+    if player1 != nil and Process.alive?(player1.pid) do
+      GenServer.cast(player1.pid, :player_joined)
+    end
+
+    if player2 != nil and Process.alive?(player2.pid) do
+      GenServer.cast(player2.pid, :player_joined)
+    end
+  end
+
   @spec clear_player(state :: t(), player_pid :: pid()) :: t()
   def clear_player(state, player_pid) do
     state
     |> Map.from_struct()
     |> Enum.map(fn
       {k, %PlayerStatus{pid: ^player_pid}} ->
+        Logger.info("leaving_player=#{inspect(player_pid)} setting left player to nil")
         {k, nil}
+
+      {_k, %PlayerStatus{pid: remaining_player_pid}} = result ->
+        Logger.info("remaining_player=#{inspect(remaining_player_pid)} informing player that opponent left during setup")
+        GenServer.cast(remaining_player_pid, :player_left)
+        result
 
       result ->
         result

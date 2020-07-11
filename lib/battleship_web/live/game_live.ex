@@ -28,7 +28,8 @@ defmodule BattleshipWeb.GameLive do
         game: nil,
         opponent: nil,
         hit_or_miss: nil,
-        error_msg: nil
+        error_msg: nil,
+        player_joined?: false
       )
 
     {:ok, socket}
@@ -74,6 +75,16 @@ defmodule BattleshipWeb.GameLive do
     end
   end
 
+  def handle_cast(:player_joined, socket) do
+    Logger.info("another player has joined during setup phase")
+    {:noreply, assign(socket, :player_joined?, true)}
+  end
+
+  def handle_cast(:player_left, socket) do
+    Logger.info("opponent has left during setup phase")
+    {:noreply, assign(socket, :player_joined?, false)}
+  end
+
   def handle_info(
         {:tile, "tile", from, %{"row" => _row, "column" => _column} = tile_selection},
         socket
@@ -114,6 +125,8 @@ defmodule BattleshipWeb.GameLive do
     do:
       List.first(available_ships)
       |> Ship.label()
+
+  def ship_name(ship), do: Ship.label(ship)
 
   def ready?(available_ships), do: Enum.count(available_ships) == 0
 

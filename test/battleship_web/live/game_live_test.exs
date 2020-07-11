@@ -80,6 +80,19 @@ defmodule BattleshipWeb.GameLiveTest do
     end
   end
 
+  describe "when players are setting up their boards" do
+    test "each player sees that a new player has joined" do
+      player1_conn = build_conn()
+      player2_conn = build_conn()
+
+      {:ok, player1, _} = live(player1_conn, "/game/baz")
+      {:ok, player2, _} = live(player2_conn, "/game/baz")
+
+      assert has_element?(player1, ".another-player")
+      assert has_element?(player2, ".another-player")
+    end
+  end
+
   describe "when the game is being played" do
     setup do
       player1_conn = build_conn()

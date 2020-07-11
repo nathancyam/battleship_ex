@@ -17,15 +17,20 @@
 <% end %>
 
 <div class="game-setup">
+  <%= if @player_joined? and is_nil(@game) do %>
+    <p class="another-player">Another player is setting up their board</p>
+  <% end %>
+
   <%= if ready?(@available_ships) and is_nil(@game) do %>
     <button id="confirm-ready" phx-click="confirm_ready">Ready</button>
   <% end %>
 
   <%= if Enum.count(@available_ships) > 0 do %>
   <div class="ship-placement">
+    <p>Remaining Ships</p>
     <ul class="remaining-ships">
     <%= for ship <- @available_ships do %>
-      <li><%= ship.type %></li>
+      <li><%= ship_name(ship) %></li>
     <% end %>
     </ul>
     <p>Please place the following ship: <%= first_ship(@available_ships) %></p>
