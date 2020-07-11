@@ -43,7 +43,7 @@ defmodule BattleshipWeb.GameLiveTest do
     assert html =~ "Please place the following ship: patrol_boat"
 
     lv |> element("#tile-0-1") |> render_click()
-    html = lv |> element(".ship_placement") |> render()
+    html = lv |> element(".ship-placement") |> render()
     refute html =~ "patrol"
     assert html =~ "Please place the following ship: submarine"
   end
@@ -88,7 +88,7 @@ defmodule BattleshipWeb.GameLiveTest do
       player2 |> element("#guess-1-0") |> render_click()
       player2 |> element("#tile-8-8") |> render_click()
 
-      error_html = player2 |> element(".game_error_msg") |> render()
+      error_html = player2 |> element(".game-error-msg") |> render()
       assert error_html =~ "Can not place ships while game is active!"
     end
 
@@ -99,7 +99,7 @@ defmodule BattleshipWeb.GameLiveTest do
       player2 |> element("#guess-1-0") |> render_click()
       player2 |> element("#guess-1-0") |> render_click()
 
-      error_html = player2 |> element(".game_error_msg") |> render()
+      error_html = player2 |> element(".game-error-msg") |> render()
       assert error_html =~ "Not your turn!"
       player1 |> element("#guess-3-3") |> render_click()
 

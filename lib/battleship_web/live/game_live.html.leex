@@ -1,5 +1,3 @@
-<h1>Hi!</h1>
-
 <%= unless is_nil(@winner?) do %>
   <div class="game_over">
   <%= if @winner? do %>
@@ -15,22 +13,22 @@
 <% end %>
 
 <%= unless is_nil(@error_msg) do %>
-  <span class="game_error_msg"><%= @error_msg %></span>
+  <span class="game-error-msg"><%= @error_msg %></span>
 <% end %>
 
 <div class="game-setup">
-  <%= if ready?(@available_ships) do %>
-  <div>
+  <%= if ready?(@available_ships) and is_nil(@game) do %>
     <button id="confirm-ready" phx-click="confirm_ready">Ready</button>
-  </div>
-  <% else %>
-  <div class="ship_placement">
-  <ul class="remaining_ships">
-  <%= for ship <- @available_ships do %>
-    <li><%= ship.type %></li>
   <% end %>
-  </ul>
-  <p>Please place the following ship: <%= first_ship(@available_ships) %></p>
+
+  <%= if Enum.count(@available_ships) > 0 do %>
+  <div class="ship-placement">
+    <ul class="remaining-ships">
+    <%= for ship <- @available_ships do %>
+      <li><%= ship.type %></li>
+    <% end %>
+    </ul>
+    <p>Please place the following ship: <%= first_ship(@available_ships) %></p>
   </div>
   <% end %>
 </div>

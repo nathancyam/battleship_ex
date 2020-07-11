@@ -1,11 +1,11 @@
 defmodule BattleshipWeb.BoardLiveComponent do
   use BattleshipWeb, :live_component
 
-  alias Battleship.Core.{Board, GuessBoard}
   alias BattleshipWeb.TileLiveComponent
 
   def render(assigns) do
     ~L"""
+    <div id="game--grid-<%= @action %>" class="game-grid">
     <%= for {line, count} <- @board do %>
       <div id="<%= line_id(@action, count) %>" phx-update="replace">
       <%= for tile <- line do %>
@@ -13,6 +13,7 @@ defmodule BattleshipWeb.BoardLiveComponent do
       <% end %>
       </div>
     <% end %>
+    </div>
     """
   end
 
