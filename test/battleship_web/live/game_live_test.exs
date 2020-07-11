@@ -30,40 +30,56 @@ defmodule BattleshipWeb.GameLiveTest do
     end
   end
 
-  test "renders the game page", %{conn: conn} do
-    {:ok, lv, disconnected_html} = live(conn, "/game/aaa")
-    assert disconnected_html =~ "tile-0-0"
-    assert render(lv) =~ "tile-0-0"
+  describe "when the game endpoint is hit" do
+    test "renders the game page", %{conn: conn} do
+      {:ok, lv, disconnected_html} = live(conn, "/game/aaa")
+      assert disconnected_html =~ "tile-0-0"
+      assert render(lv) =~ "tile-0-0"
+    end
   end
 
-  test "removes the available ships when placed", %{conn: conn} do
-    {:ok, lv, _disconnected_html} = live(conn, "/game/aaa")
+  describe "when the ships are placed" do
+    setup %{conn: conn} do
+      {:ok, lv, _disconnected_html} = live(conn, "/game/aaa")
+      %{view: lv}
+    end
 
-    html = lv |> element("#tile-0-0") |> render_click()
-    assert html =~ "Please place the following ship: patrol_boat"
+    @tag skip: true
+    test "toggles the tile selection", %{view: lv} do
+      select_tile = fn ->
+        lv |> element("#tile-0-0") |> render_click()
+        lv |> element("#tile-0-0") |> render()
+      end
 
-    lv |> element("#tile-0-1") |> render_click()
-    html = lv |> element(".ship-placement") |> render()
-    refute html =~ "patrol"
-    assert html =~ "Please place the following ship: submarine"
+      assert select_tile.() =~ "⭕"
+      assert select_tile.() =~ "🌊"
+    end
+
+    test "removes the available ships when placed", %{view: lv} do
+      html = lv |> element("#tile-0-0") |> render_click()
+      assert html =~ "Please place the following ship: patrol_boat"
+
+      lv |> element("#tile-0-1") |> render_click()
+      html = lv |> element(".ship-placement") |> render()
+      refute html =~ "patrol"
+      assert html =~ "Please place the following ship: submarine"
+    end
+
+    test "shows the ready button when all ships are placed", %{view: lv} do
+      {lv, _} = complete_placement(lv)
+
+      html = lv |> element(".game-setup") |> render()
+      refute html =~ "Please place"
+      assert html =~ "Ready"
+    end
+
+    test "updates game proces state when ready is clicked", %{view: lv} do
+      {lv, _html} = complete_placement(lv)
+      lv |> element("#confirm-ready") |> render_click()
+    end
   end
 
-  test "shows the ready button when all ships are placed", %{conn: conn} do
-    {:ok, lv, _disconnected_html} = live(conn, "/game/aaa")
-    {lv, _} = complete_placement(lv)
-
-    html = lv |> element(".game-setup") |> render()
-    refute html =~ "Please place"
-    assert html =~ "Ready"
-  end
-
-  test "updates game proces state when ready is clicked", %{conn: conn} do
-    {:ok, lv, _disconnected_html} = live(conn, "/game/bbb")
-    {lv, _html} = complete_placement(lv)
-    lv |> element("#confirm-ready") |> render_click()
-  end
-
-  describe "game playthough" do
+  describe "when the game is being played" do
     setup do
       player1_conn = build_conn()
       player2_conn = build_conn()

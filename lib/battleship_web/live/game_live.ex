@@ -125,7 +125,7 @@ defmodule BattleshipWeb.GameLive do
     game.active_turn == des
   end
 
-  @spec notify_opponent_of_game_change(res :: GuessAction.GuessResult.t()) ::
+  @spec notify_opponent_of_game_change(res :: GuessResult.t()) ::
           Phoenix.LiveView.Socket.t()
   defp notify_opponent_of_game_change(guess_result) do
     %{opponent: opponent, game: game, designation: des} = guess_result.socket.assigns

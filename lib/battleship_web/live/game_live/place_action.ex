@@ -52,7 +52,7 @@ defmodule BattleshipWeb.GameLive.PlaceAction do
   end
 
   @spec create_selection(selection :: map(), socket :: Socket.t()) ::
-          {old :: selection(), new :: selection(), unselect?: boolean()}
+          {old :: selection(), new :: selection(), unselect? :: boolean()}
   defp create_selection(%{"row" => row, "column" => column}, %{assigns: %{selection: selection}}) do
     tuple = {String.to_integer(row), String.to_integer(column)}
     empty = {nil, nil}
