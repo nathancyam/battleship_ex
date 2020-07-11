@@ -62,6 +62,8 @@ defmodule BattleshipWeb.GameLiveTest do
       html = lv |> element(".ship-placement") |> render()
       refute html =~ "patrol"
       assert html =~ "Please place the following ship: submarine"
+
+      refute has_element?(lv, "#confirm-ready")
     end
 
     test "shows the ready button when all ships are placed", %{view: lv} do

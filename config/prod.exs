@@ -52,4 +52,6 @@ config :logger, level: :info
 
 # Finally import the config/prod.secret.exs which loads secrets
 # and configuration from environment variables.
-import_config "prod.secret.exs"
+
+# Ignored, using Elixir releases.
+# import_config "prod.secret.exs"
