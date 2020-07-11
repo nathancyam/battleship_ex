@@ -78,30 +78,26 @@ defmodule BattleshipWeb.GameLive do
         {:tile, "tile", from, %{"row" => _row, "column" => _column} = tile_selection},
         socket
       ) do
-    new_socket =
-      if can_place?(socket) do
-        PlaceAction.place(tile_selection, from, socket)
-      else
-        socket
-        |> assign(:error_msg, "Can not place ships while game is active!")
-      end
-
-    {:noreply, new_socket}
+    if can_place?(socket) do
+      {:noreply, PlaceAction.place(tile_selection, from, socket)}
+    else
+      {:noreply,
+       socket
+       |> assign(:error_msg, "Can not place ships while game is active!")}
+    end
   end
 
   def handle_info(
         {:tile, "guess", _from, %{"row" => _row, "column" => _column} = tile_selection},
         socket
       ) do
-    if can_guess?(socket) do
-      do_guess = &GuessAction.guess(&2, &1)
-
+    if not can_guess?(socket) do
+      {:noreply, assign(socket, :error_msg, "Not your turn!")}
+    else
       {:noreply,
        socket
-       |> do_guess.(tile_selection)
+       |> (&GuessAction.guess(&2, &1)).(tile_selection)
        |> notify_opponent_of_game_change()}
-    else
-      {:noreply, assign(socket, :error_msg, "Not your turn!")}
     end
   end
 
