@@ -68,6 +68,21 @@ defmodule Battleship.Setup.ServerTest do
       Process.exit(player2, :kill)
       assert_receive {^player, :player_left}
     end
+
+    test "stops setup when all players leave", %{server: svr} do
+      {:ok, player} = start_player_agent("playerA")
+      {:ok, player2} = start_player_agent("playerB")
+
+      Setup.register_player_socket(svr, player)
+      Setup.register_player_socket(svr, player2)
+
+      Process.exit(player2, :kill)
+      Process.exit(player, :kill)
+
+      Process.sleep(100)
+
+      refute Process.alive?(svr)
+    end
   end
 
   describe "toggle_player_ready/2" do

@@ -37,6 +37,11 @@ defmodule Battleship.Setup.State do
 
   def add_player(%__MODULE__{} = state, _pid), do: {:error, :game_full, state}
 
+  @spec no_players?(state :: t()) :: boolean()
+  def no_players?(state) do
+    state.player1 == nil and state.player2 == nil
+  end
+
   @spec toggle_readiness(state :: t(), player_pid :: pid(), player :: Player.t()) :: t()
   def toggle_readiness(state, player_pid, player) do
     state

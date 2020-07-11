@@ -67,6 +67,10 @@ defmodule Battleship.Setup do
 
   def handle_info({:DOWN, _ref, :process, down_player, _reason}, state) do
     new_state = State.clear_player(state, down_player)
-    {:noreply, new_state}
+    if State.no_players?(new_state) do
+      {:stop, :normal, new_state}
+    else
+      {:noreply, new_state}
+    end
   end
 end
