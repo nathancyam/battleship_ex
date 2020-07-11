@@ -44,7 +44,6 @@ defmodule BattleshipWeb.GameLiveTest do
       %{view: lv}
     end
 
-    @tag skip: true
     test "toggles the tile selection", %{view: lv} do
       select_tile = fn ->
         lv |> element("#tile-0-0") |> render_click()

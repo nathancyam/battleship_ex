@@ -24,7 +24,7 @@ defmodule BattleshipWeb.GameLive.PlaceAction do
     {ships_to_place, tiles_changed, updated_player, new_selection} =
       do_placement(player, ships, selection)
 
-    if new_selection == @empty_selection do
+    if new_selection == @empty_selection and not unselect? do
       Logger.info(
         "selection=#{inspect(selection)} made full selection, setting selected tiles to ships"
       )
