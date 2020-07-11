@@ -1,13 +1,11 @@
 defmodule BattleshipWeb.GameLive do
   use BattleshipWeb, :live_view
 
-  alias BattleshipWeb.BoardLiveComponent
+  require Logger
+  alias BattleshipWeb.{BoardLiveComponent}
+  alias BattleshipWeb.GameLive.{GuessAction, GuessResult, PlaceAction}
   alias Battleship.Core.{Game, Player, Ship}
   alias Battleship.Setup
-
-  @typep point_val :: non_neg_integer() | nil
-  @typep point :: {point_val(), point_val()}
-  @typep selection :: {point(), point()}
 
   @empty_selection {{nil, nil}, {nil, nil}}
 
@@ -46,81 +44,23 @@ defmodule BattleshipWeb.GameLive do
     {:noreply, new_socket}
   end
 
-  def handle_event("tile", %{"row" => row, "column" => column}, socket) do
-    new_socket =
-      if can_place?(socket) do
-        %{selection: selection, available_ships: ships, player: player} = socket.assigns
-
-        tuple = {String.to_integer(row), String.to_integer(column)}
-        empty = {nil, nil}
-
-        new_selection =
-          case selection do
-            {^empty, ^empty} ->
-              {tuple, empty}
-
-            {^tuple, ^empty} ->
-              {empty, empty}
-
-            {existing, ^empty} ->
-              {existing, tuple}
-
-            {existing, ^tuple} ->
-              {existing, empty}
-
-            _ ->
-              selection
-          end
-
-        {ships_to_place, updated_player, new_selection} =
-          do_placement(player, ships, new_selection)
-
+  def handle_call(
+        {:receive_from_opponent, game, opponent_process, from, opponent_guess},
+        _from,
         socket
-        |> assign(:selection, new_selection)
-        |> assign(:available_ships, ships_to_place)
-        |> assign(:player, updated_player)
-      else
-        socket
-        |> assign(:error_msg, "Can not place ships while game is active!")
-      end
-
-    {:noreply, new_socket}
-  end
-
-  def handle_event("guess", %{"row" => row, "column" => column}, socket) do
-    if can_guess?(socket) do
-      tuple = {String.to_integer(row), String.to_integer(column)}
-
-      {:noreply,
-       socket
-       |> do_guess(tuple)
-       |> notify_opponent_of_game_change()}
-    else
-      {:noreply, assign(socket, :error_msg, "Not your turn!")}
-    end
-  end
-
-  def board_by_line(player, :board), do: Enum.chunk_every(player.board.grid, 10) |> Enum.with_index()
-  def board_by_line(player, :guess), do: Enum.chunk_every(player.guess_board.grid, 10) |> Enum.with_index()
-
-  @spec notify_opponent_of_game_change(socket :: Phoenix.LiveView.Socket.t()) ::
-          Phoenix.LiveView.Socket.t()
-  def notify_opponent_of_game_change(socket) do
-    %{opponent: opponent, game: game, designation: des} = socket.assigns
-    GenServer.call(opponent, {:receive_from_opponent, game, self(), des})
-    socket
-  end
-
-  def handle_call({:receive_from_opponent, game, opponent_process, from}, _from, socket) do
+      ) do
     whoami = invert_designation(from)
+    player = Map.get(game, whoami)
 
     default_assigns = [
       designation: whoami,
-      player: Map.get(game, whoami),
+      player: player,
       game: game,
       error_msg: nil,
       opponent: opponent_process
     ]
+
+    GuessResult.react_to_opponent_guess(player, opponent_guess)
 
     if game.over? do
       {:reply, :ok,
@@ -132,6 +72,46 @@ defmodule BattleshipWeb.GameLive do
        socket
        |> assign(default_assigns)}
     end
+  end
+
+  def handle_info(
+        {:tile, "tile", from, %{"row" => _row, "column" => _column} = tile_selection},
+        socket
+      ) do
+    new_socket =
+      if can_place?(socket) do
+        PlaceAction.place(tile_selection, from, socket)
+      else
+        socket
+        |> assign(:error_msg, "Can not place ships while game is active!")
+      end
+
+    {:noreply, new_socket}
+  end
+
+  def handle_info(
+        {:tile, "guess", _from, %{"row" => _row, "column" => _column} = tile_selection},
+        socket
+      ) do
+    if can_guess?(socket) do
+      do_guess = &GuessAction.guess(&2, &1)
+
+      {:noreply,
+       socket
+       |> do_guess.(tile_selection)
+       |> notify_opponent_of_game_change()}
+    else
+      {:noreply, assign(socket, :error_msg, "Not your turn!")}
+    end
+  end
+
+  def empty_board() do
+    for x <- Enum.to_list(0..9),
+        y <- Enum.to_list(0..9) do
+      %{row: x, column: y}
+    end
+    |> Enum.chunk_every(10)
+    |> Enum.with_index()
   end
 
   def first_ship(available_ships),
@@ -149,60 +129,17 @@ defmodule BattleshipWeb.GameLive do
     game.active_turn == des
   end
 
-  @spec do_guess(
-          socket :: Phoenix.LiveView.Socket.t(),
-          guess_type :: {non_neg_integer(), non_neg_integer()}
-        ) :: Phoenix.LiveView.Socket.t()
-  defp do_guess(socket, guess_tuple) do
-    %{game: game, designation: des} = socket.assigns
-    get_player = &Map.get(&1, des)
-
-    case Game.guess(game, guess_tuple) do
-      {:continue, hit_or_miss, updated_game} ->
-        socket
-        |> assign(:game, updated_game)
-        |> assign(:player, get_player.(updated_game))
-        |> assign(
-          :hit_or_miss,
-          if hit_or_miss == :hit do
-            "You hit a target!"
-          else
-            "You missed!"
-          end
-        )
-
-      {:game_over, winner, updated_game} ->
-        player = get_player.(updated_game)
-
-        socket
-        |> assign(:game, updated_game)
-        |> assign(:winner?, player == winner)
-        |> assign(:player, player)
-    end
+  @spec notify_opponent_of_game_change(res :: GuessAction.GuessResult.t()) ::
+          Phoenix.LiveView.Socket.t()
+  defp notify_opponent_of_game_change(guess_result) do
+    %{opponent: opponent, game: game, designation: des} = guess_result.socket.assigns
+    GenServer.call(opponent, {:receive_from_opponent, game, self(), des, guess_result})
+    guess_result.socket
   end
 
   @spec invert_designation(atom()) :: atom()
   defp invert_designation(:player1), do: :player2
   defp invert_designation(:player2), do: :player1
-
-  @spec do_placement(player :: Player.t(), ships :: [Ship.t()], selection :: selection()) ::
-          {remaining_ships :: [Ship.t()], Player.placement_result(), selection :: selection()}
-  defp do_placement(
-         player,
-         [ship | rest] = ships,
-         {{start_x, start_y}, {end_x, end_y}} = selection
-       )
-       when start_x != nil and start_y != nil and end_x != nil and end_y != nil do
-    case Player.place(player, ship, selection) do
-      {:ok, player} ->
-        {rest, player, @empty_selection}
-
-      {:error, _reason, player} ->
-        {ships, player, selection}
-    end
-  end
-
-  defp do_placement(player, ships, selection), do: {ships, player, selection}
 
   @spec handle_readiness(
           res :: {:ok, Setup.State.t(), pid()} | :not_started,

@@ -23,7 +23,8 @@ defmodule Battleship.Core.PlayerTest do
 
     test "places the ships on the board and updates the board", %{player: player} do
       carrier = Ship.new(:carrier)
-      {:ok, updated_player} = Player.place(player, carrier, {{0, 0}, {0, 4}})
+      {:ok, tiles_changed, updated_player} = Player.place(player, carrier, {{0, 0}, {0, 4}})
+      assert tiles_changed == [{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}]
       refute updated_player.board == player.board
     end
   end

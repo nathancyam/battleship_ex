@@ -1,11 +1,13 @@
 <h1>Hi!</h1>
 
 <%= unless is_nil(@winner?) do %>
+  <div class="game_over">
   <%= if @winner? do %>
     <h2>You win!</h2>
   <% else %>
     <h2>You lose!</h2>
   <% end %>
+  </div>
 <% end %>
 
 <%= unless is_nil(@hit_or_miss) do %>
@@ -13,29 +15,28 @@
 <% end %>
 
 <%= unless is_nil(@error_msg) do %>
-  <span><%= @error_msg %></span>
+  <span class="game_error_msg"><%= @error_msg %></span>
 <% end %>
 
-<div>
-  <ul>
-  <%= for ship <- @available_ships do %>
-    <li><%= ship.type %></li>
-  <% end %>
-  </ul>
-<div>
-
-<div>
+<div class="game-setup">
   <%= if ready?(@available_ships) do %>
   <div>
     <button id="confirm-ready" phx-click="confirm_ready">Ready</button>
   </div>
   <% else %>
+  <div class="ship_placement">
+  <ul class="remaining_ships">
+  <%= for ship <- @available_ships do %>
+    <li><%= ship.type %></li>
+  <% end %>
+  </ul>
   <p>Please place the following ship: <%= first_ship(@available_ships) %></p>
+  </div>
   <% end %>
 </div>
 
-<%= live_component @socket, BoardLiveComponent, board: board_by_line(@player, :board), selection: @selection, action: "tile" %>
+<%= live_component @socket, BoardLiveComponent, board: empty_board(), action: "tile" %>
 
 <%= unless is_nil(@game) do %>
-  <%= live_component @socket, BoardLiveComponent, board: board_by_line(@player, :guess), selection: @selection, action: "guess" %>
+  <%= live_component @socket, BoardLiveComponent, board: empty_board(), action: "guess" %>
 <% end %>

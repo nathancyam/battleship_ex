@@ -40,7 +40,7 @@ defmodule Battleship.Core.ConsoleRendererTest do
 
       board =
         Enum.reduce(steps, board, fn {ship, placement}, updated_board ->
-          {:ok, updated_board} = Board.place(updated_board, ship, placement)
+          {:ok, _tiles, updated_board} = Board.place(updated_board, ship, placement)
           updated_board
         end)
 

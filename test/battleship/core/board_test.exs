@@ -28,7 +28,7 @@ defmodule Battleship.Core.BoardTest do
       carrier = Ship.new(:carrier)
       destroyer = Ship.new(:destroyer)
 
-      {:ok, new_board} = Board.place(board, carrier, {{0, 0}, {0, 4}})
+      {:ok, _tiles, new_board} = Board.place(board, carrier, {{0, 0}, {0, 4}})
 
       {:error, :overlap, unchanged_board} = Board.place(new_board, destroyer, {{0, 2}, {2, 2}})
 
@@ -54,7 +54,7 @@ defmodule Battleship.Core.BoardTest do
 
       board =
         Enum.reduce(steps, board, fn {ship, placement}, updated_board ->
-          {:ok, updated_board} = Board.place(updated_board, ship, placement)
+          {:ok, _tiles, updated_board} = Board.place(updated_board, ship, placement)
           updated_board
         end)
 
@@ -67,8 +67,11 @@ defmodule Battleship.Core.BoardTest do
       carrier = Ship.new(:carrier)
       destroyer = Ship.new(:destroyer)
 
-      {:ok, new_board} = Board.place(board, carrier, {{0, 0}, {0, 4}})
-      {:ok, new_board} = Board.place(new_board, destroyer, {{2, 2}, {2, 4}})
+      {:ok, tiles, new_board} = Board.place(board, carrier, {{0, 0}, {0, 4}})
+      assert tiles == [{0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}]
+
+      {:ok, tiles, new_board} = Board.place(new_board, destroyer, {{2, 2}, {2, 4}})
+      assert tiles == [{2, 2}, {2, 3}, {2, 4}]
 
       refute board == new_board
 
@@ -91,7 +94,7 @@ defmodule Battleship.Core.BoardTest do
 
       board =
         Enum.reduce(steps, Board.new(), fn {ship, placement}, updated_board ->
-          {:ok, updated_board} = Board.place(updated_board, ship, placement)
+          {:ok, _tiles, updated_board} = Board.place(updated_board, ship, placement)
           updated_board
         end)
 

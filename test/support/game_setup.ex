@@ -11,7 +11,7 @@ defmodule Battleship.GameSetup do
     ]
 
     Enum.reduce(steps, Player.new(player_name), fn {ship, placement}, player ->
-      {:ok, player} = Player.place(player, ship, placement)
+      {:ok, _tiles, player} = Player.place(player, ship, placement)
       player
     end)
   end

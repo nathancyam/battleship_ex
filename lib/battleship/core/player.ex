@@ -3,12 +3,12 @@ defmodule Battleship.Core.Player do
   A player module that contains all the player operations.
   """
 
-  alias Battleship.Core.{Board, GuessBoard, Ship}
+  alias Battleship.Core.{Board, GuessBoard, Notation, Ship}
 
   defstruct [:board, :name, :guess_board]
 
   @type hit_result :: :miss | :hit
-  @type placement_result :: {:ok, t()} | {:error, Board.error(), t()}
+  @type placement_result :: {:ok, [Board.point()], t()} | {:error, Board.error(), t()}
   @type t :: %__MODULE__{
           board: Board.t(),
           name: String.t(),
@@ -31,12 +31,19 @@ defmodule Battleship.Core.Player do
           placement_result()
   def place(player, ship, placement) do
     case Board.place(player.board, ship, placement) do
-      {:ok, board} ->
-        {:ok, %{player | board: board}}
+      {:ok, tiles_changed, board} ->
+        {:ok, tiles_changed, %{player | board: board}}
 
       {:error, reason, _board} ->
         {:error, reason, player}
     end
+  end
+
+  @spec tiles_at_boards(player :: t(), coordinates :: {non_neg_integer(), non_neg_integer()}) ::
+          {GuessBoard.Coordinate.t(), Board.Coordinate.t()}
+  def tiles_at_boards(player, point) do
+    index = Notation.point_to_index(point)
+    {Enum.at(player.guess_board.grid, index), Enum.at(player.board.grid, index)}
   end
 
   @doc """

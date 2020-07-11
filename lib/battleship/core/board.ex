@@ -62,7 +62,7 @@ defmodule Battleship.Core.Board do
   the updated board.
   """
   @spec place(board :: t(), ship :: Ship.t(), placement :: placement()) ::
-          {:ok, t()} | {:error, error(), t()}
+          {:ok, [point()], t()} | {:error, error(), t()}
   def place(%__MODULE__{grid: grid, positions: positions} = board, ship, placement) do
     cond do
       Enum.count(positions) == 5 ->
@@ -80,8 +80,11 @@ defmodule Battleship.Core.Board do
       true ->
         {indices, new_grid} = update_board_with_placement(grid, Ship.atom(ship), placement)
         updated_ship_positions = Map.put(positions, ship, indices)
+        tiles_changed = tiles_change(placement)
         ready? = Enum.count(updated_ship_positions)
-        {:ok, %{board | grid: new_grid, positions: updated_ship_positions, ready?: ready?}}
+
+        {:ok, tiles_changed,
+         %{board | grid: new_grid, positions: updated_ship_positions, ready?: ready?}}
     end
   end
 
@@ -203,6 +206,17 @@ defmodule Battleship.Core.Board do
       tens = 10 * row
       single = 1 * col
       tens + single
+    end
+  end
+
+  @spec tiles_change(placement :: placement()) :: [point()]
+  defp tiles_change({start, terminal}) do
+    {start_row, start_column} = start
+    {end_row, end_column} = terminal
+
+    for row <- Range.new(start_row, end_row),
+        col <- Range.new(start_column, end_column) do
+      {row, col}
     end
   end
 

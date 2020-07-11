@@ -42,15 +42,17 @@ defmodule BattleshipWeb.GameLiveTest do
     html = lv |> element("#tile-0-0") |> render_click()
     assert html =~ "Please place the following ship: patrol_boat"
 
-    html = lv |> element("#tile-0-1") |> render_click()
+    lv |> element("#tile-0-1") |> render_click()
+    html = lv |> element(".ship_placement") |> render()
     refute html =~ "patrol"
     assert html =~ "Please place the following ship: submarine"
   end
 
   test "shows the ready button when all ships are placed", %{conn: conn} do
     {:ok, lv, _disconnected_html} = live(conn, "/game/aaa")
-    {_lv, html} = complete_placement(lv)
+    {lv, _} = complete_placement(lv)
 
+    html = lv |> element(".game-setup") |> render()
     refute html =~ "Please place"
     assert html =~ "Ready"
   end
@@ -84,10 +86,9 @@ defmodule BattleshipWeb.GameLiveTest do
       player2: player2
     } do
       player2 |> element("#guess-1-0") |> render_click()
+      player2 |> element("#tile-8-8") |> render_click()
 
-      error_html =
-        player2 |> element("#tile-8-8") |> render_click()
-
+      error_html = player2 |> element(".game_error_msg") |> render()
       assert error_html =~ "Can not place ships while game is active!"
     end
 
@@ -96,8 +97,9 @@ defmodule BattleshipWeb.GameLiveTest do
       player2: player2
     } do
       player2 |> element("#guess-1-0") |> render_click()
-      error_html = player2 |> element("#guess-1-0") |> render_click()
+      player2 |> element("#guess-1-0") |> render_click()
 
+      error_html = player2 |> element(".game_error_msg") |> render()
       assert error_html =~ "Not your turn!"
       player1 |> element("#guess-3-3") |> render_click()
 
@@ -120,12 +122,13 @@ defmodule BattleshipWeb.GameLiveTest do
         close_selection()
         |> Enum.map(to_tile)
 
-      {player2_html, player1_html} =
-        Enum.zip(perfect, close)
-        |> Enum.reduce({"", ""}, fn {tile1, tile2}, _ ->
-          {player2 |> element(tile1) |> render_click(),
-           player1 |> element(tile2) |> render_click()}
-        end)
+      Enum.zip(perfect, close)
+      |> Enum.reduce({"", ""}, fn {tile1, tile2}, _ ->
+        {player2 |> element(tile1) |> render_click(), player1 |> element(tile2) |> render_click()}
+      end)
+
+      player2_html = player2 |> element(".game_over") |> render()
+      player1_html = player1 |> element(".game_over") |> render()
 
       assert player2_html =~ "You win!"
       refute player2_html =~ "You lose!"
