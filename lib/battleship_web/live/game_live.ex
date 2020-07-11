@@ -113,7 +113,7 @@ defmodule BattleshipWeb.GameLive do
   def first_ship(available_ships),
     do:
       List.first(available_ships)
-      |> Map.get(:type)
+      |> Ship.label()
 
   def ready?(available_ships), do: Enum.count(available_ships) == 0
 

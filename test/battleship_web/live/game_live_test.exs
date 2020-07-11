@@ -56,12 +56,12 @@ defmodule BattleshipWeb.GameLiveTest do
 
     test "removes the available ships when placed", %{view: lv} do
       html = lv |> element("#tile-0-0") |> render_click()
-      assert html =~ "Please place the following ship: patrol_boat"
+      assert html =~ "Please place the following ship: Patrol boat (length: 2)"
 
       lv |> element("#tile-0-1") |> render_click()
       html = lv |> element(".ship-placement") |> render()
       refute html =~ "patrol"
-      assert html =~ "Please place the following ship: submarine"
+      assert html =~ "Please place the following ship: Submarine (length: 2)"
 
       refute has_element?(lv, "#confirm-ready")
     end

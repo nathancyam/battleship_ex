@@ -23,6 +23,16 @@ defmodule Battleship.Core.Ship do
     |> Enum.map(&new/1)
   end
 
+  def label(ship) do
+    name =
+      ship.type
+      |> Atom.to_string()
+      |> String.replace("_", " ")
+      |> String.capitalize()
+
+    "#{name} (length: #{__MODULE__.length(ship)})"
+  end
+
   @spec atom(ship :: t()) :: type_atom()
   def atom(%{type: type}), do: type
 
