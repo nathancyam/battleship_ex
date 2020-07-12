@@ -77,7 +77,10 @@ defmodule Battleship.Setup.State do
         {k, nil}
 
       {_k, %PlayerStatus{pid: remaining_player_pid}} = result ->
-        Logger.info("remaining_player=#{inspect(remaining_player_pid)} informing player that opponent left during setup")
+        Logger.info(
+          "remaining_player=#{inspect(remaining_player_pid)} informing player that opponent left during setup"
+        )
+
         GenServer.cast(remaining_player_pid, :player_left)
         result
 
