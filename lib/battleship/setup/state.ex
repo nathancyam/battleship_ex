@@ -102,4 +102,9 @@ defmodule Battleship.Setup.State do
     Logger.info("starting game")
     %{state | game: Game.start!(player1.player, player2.player)}
   end
+
+  def guess(state, tile) do
+    {_continue?, _hit_status, new_game} = res = Game.guess(state.game, tile)
+    {res, %{state | game: new_game}}
+  end
 end

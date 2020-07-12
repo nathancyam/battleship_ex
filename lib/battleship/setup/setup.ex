@@ -21,9 +21,7 @@ defmodule Battleship.Setup do
     do: GenServer.call(server, {:add_player, player_socket})
 
   @spec start_game(server :: pid()) :: {game :: Game.t(), player1 :: pid(), player2 :: pid()}
-  def start_game(server) do
-    GenServer.call(server, :start_game)
-  end
+  def start_game(server), do: GenServer.call(server, :start_game)
 
   @spec toggle_player_ready(server :: pid(), player_socket :: pid(), player :: Player.t()) ::
           {:ok, new_state :: State.t(), pid()}
@@ -33,10 +31,19 @@ defmodule Battleship.Setup do
     {:ok, new_state, server}
   end
 
+  @spec select_tile(server :: pid(), tile :: {non_neg_integer(), non_neg_integer()}) ::
+          Game.turn_result()
+  def select_tile(server, tile) do
+    # TODO: Call process update the game state with placement
+    #       Return the result of the selection back to the calling process
+    GenServer.call(server, {:select_tile, tile})
+  end
+
   def handle_call(:start_game, _from, state) do
     %{game: game} = new_state = State.start_game(state)
-    Logger.info("creating game and terminating game setup")
-    {:stop, :normal, {game, new_state.player1.pid, new_state.player2.pid}, new_state}
+    Logger.info("creating game and transitioning to game management")
+    # {:reply, game, new_state}
+    {:reply, {game, new_state.player1.pid, new_state.player2.pid}, new_state}
   end
 
   def handle_call({:add_player, player_socket}, _from, state) do
@@ -55,6 +62,11 @@ defmodule Battleship.Setup do
     end
   end
 
+  def handle_call({:select_tile, tile}, _from, state) do
+    {guess_result, new_state} = State.guess(state, tile)
+    {:reply, guess_result, new_state, {:continue, {:notify_opponent, tile}}}
+  end
+
   def handle_call({:toggle_player_ready, player_socket, player}, _from, state) do
     new_state = State.toggle_readiness(state, player_socket, player)
     {:reply, {:ok, new_state}, new_state}
@@ -62,6 +74,18 @@ defmodule Battleship.Setup do
 
   def handle_continue(:player_joined, state) do
     State.dispatch_player_joined(state)
+    {:noreply, state}
+  end
+
+  def handle_continue({:notify_opponent, tile}, state) do
+    case Map.get(state, state.game.active_turn) do
+      %{pid: opponent_pid} when is_pid(opponent_pid) ->
+        GenServer.cast(opponent_pid, {:receive_selection_from_opponent, tile})
+
+      nil ->
+        Logger.warn("opponent pid could not be found.")
+    end
+
     {:noreply, state}
   end
 
