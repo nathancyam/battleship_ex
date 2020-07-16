@@ -129,13 +129,9 @@ defmodule BattleshipWeb.GameLiveTest do
       player2 |> element("#guess-1-0") |> render_click()
       player2 |> element("#guess-1-0") |> render_click()
 
-      error_html = player2 |> element(".game-error-msg") |> render()
-      assert error_html =~ "Not your turn!"
+      assert has_element?(player2, ".game-error-msg", "Not your turn!")
       player1 |> element("#guess-3-3") |> render_click()
-
-      no_error_html = player2 |> render()
-
-      refute no_error_html =~ "Not your turn!"
+      refute has_element?(player2, ".game-error-msg")
     end
 
     test "runs through a game with player 2 winning", %{

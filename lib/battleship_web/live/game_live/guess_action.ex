@@ -36,6 +36,7 @@ defmodule BattleshipWeb.GameLive.GuessAction do
               "You missed!"
             end
           )
+          |> assign(:turn_lock?, true)
 
         case hit_or_miss do
           :hit ->
@@ -54,6 +55,7 @@ defmodule BattleshipWeb.GameLive.GuessAction do
 
         socket
         |> assign(:winner?, player == winner)
+          |> assign(:turn_lock?, true)
     end
   end
 end

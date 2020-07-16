@@ -98,7 +98,11 @@ defmodule BattleshipWeb.GameLive do
 
     # Update the player placement board with X or :boom:
     send_update(TileLiveComponent, id: place_id, icon: ConsoleRenderer.to_emoji(placement_tile))
-    {:noreply, socket}
+    {:noreply, socket |> assign(:turn_lock?, false) |> assign(:error_msg, nil)}
+  end
+
+  def handle_cast({:update_assigns, assigns}, socket) do
+    {:noreply, assign(socket, assigns)}
   end
 
   def handle_info(
@@ -181,6 +185,7 @@ defmodule BattleshipWeb.GameLive do
   defp do_game_setup(game_pid, socket) do
     socket
     |> assign(:ready?, true)
+    |> assign(:turn_lock?, false)
     |> assign(Setup.start_game(game_pid))
   end
 end

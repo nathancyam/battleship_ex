@@ -45,7 +45,7 @@ defmodule BattleshipWeb.GameLive.GuessResult do
 
     tile_id = TileLiveComponent.id_by_selection(result.guess)
     guess_id = "guess-#{tile_id}"
-    place_id = "tile-#{tile_id}
+    place_id = "tile-#{tile_id}"
 
     # Update the guess board whether it was a hit or miss
     send_update(TileLiveComponent, id: guess_id, icon: ConsoleRenderer.to_emoji(guess_tile))

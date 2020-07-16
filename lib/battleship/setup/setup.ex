@@ -22,7 +22,9 @@ defmodule Battleship.Setup do
     do: GenServer.call(server, {:add_player, player_socket})
 
   @spec start_game(server :: pid()) :: Keyword.t()
-  def start_game(server), do: GenServer.call(server, :start_game)
+  def start_game(server) do
+    GenServer.call(server, :start_game)
+  end
 
   @spec toggle_player_ready(server :: pid(), player_socket :: pid(), player :: Player.t()) ::
           {:ok, new_state :: State.t(), pid()}
@@ -40,23 +42,23 @@ defmodule Battleship.Setup do
     GenServer.call(server, {:select_tile, tile})
   end
 
-  def handle_call(:start_game, from, state) do
+  def handle_call(:start_game, {from, _ref}, state) do
     %{game: game, player1: player1, player2: player2} = new_state = State.start_game(state)
     Logger.info("creating game and transitioning to game management")
 
-    player1_assigns = [designation: :player1]
-    player2_assigns = [designation: :player2]
+    player1_assigns = [designation: :player1, game_in_session?: true, game_pid: self()]
+    player2_assigns = [designation: :player2, game_in_session?: true, game_pid: self()]
 
-    {game, assigns} =
+    {game, return_assigns, dispatch_assigns} =
       case {player1.pid, player2.pid} do
         {^from, _} ->
-          {game, %{return: true, send: false}}
+          {game, player1_assigns, {player2.pid, player2_assigns}}
 
         {_, ^from} ->
-          {Game.change_active_turn(game), %{return: false, send: true}}
+          {Game.change_active_turn(game), player2_assigns, {player1.pid, player1_assigns}}
       end
 
-    {:reply, assigns, %{new_state | game: game}}
+    {:reply, return_assigns, %{new_state | game: game}, {:continue, {:second, dispatch_assigns}}}
   end
 
   def handle_call({:add_player, player_socket}, _from, state) do
@@ -83,6 +85,11 @@ defmodule Battleship.Setup do
   def handle_call({:toggle_player_ready, player_socket, player}, _from, state) do
     new_state = State.toggle_readiness(state, player_socket, player)
     {:reply, {:ok, new_state}, new_state}
+  end
+
+  def handle_continue({:second, {player_pid, assigns}}, state) do
+    GenServer.cast(player_pid, {:update_assigns, Keyword.put(assigns, :turn_lock?, true)})
+    {:noreply, state}
   end
 
   def handle_continue(:player_joined, state) do
