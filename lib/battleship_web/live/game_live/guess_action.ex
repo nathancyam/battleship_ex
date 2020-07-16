@@ -5,6 +5,7 @@ defmodule BattleshipWeb.GameLive.GuessAction do
 
   alias Phoenix.LiveView.Socket
   alias Battleship.Core.{Game}
+  alias Battleship.Setup
   alias BattleshipWeb.GameLive.GuessResult
 
   @type point :: {non_neg_integer(), non_neg_integer()}
@@ -20,15 +21,13 @@ defmodule BattleshipWeb.GameLive.GuessAction do
           guess_type :: {non_neg_integer(), non_neg_integer()}
         ) :: GuessResult.t()
   defp do_guess(socket, guess_tuple) do
-    %{game: game, designation: des} = socket.assigns
+    %{designation: des, game_pid: pid} = socket.assigns
     get_player = &Map.get(&1, des)
 
-    case Game.guess(game, guess_tuple) do
+    case Setup.guess(pid, guess_tuple) do
       {:continue, hit_or_miss, updated_game} ->
         new_socket =
           socket
-          |> assign(:game, updated_game)
-          |> assign(:player, get_player.(updated_game))
           |> assign(
             :hit_or_miss,
             if hit_or_miss == :hit do
@@ -48,17 +47,13 @@ defmodule BattleshipWeb.GameLive.GuessAction do
             |> GuessResult.update_selected_tile()
         end
 
+        new_socket
+
       {:game_over, winner, updated_game} ->
         player = get_player.(updated_game)
 
-        GuessResult.hit(
-          guess_tuple,
-          socket
-          |> assign(:game, updated_game)
-          |> assign(:winner?, player == winner)
-          |> assign(:player, player)
-        )
-        |> GuessResult.update_selected_tile()
+        socket
+        |> assign(:winner?, player == winner)
     end
   end
 end

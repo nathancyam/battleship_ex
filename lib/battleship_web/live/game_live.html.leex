@@ -17,11 +17,11 @@
 <% end %>
 
 <div class="game-setup">
-  <%= if @player_joined? and is_nil(@game) do %>
+  <%= if @player_joined? and not @game_in_session? do %>
     <p class="another-player">Another player is setting up their board</p>
   <% end %>
 
-  <%= if ready?(@available_ships) and is_nil(@game) do %>
+  <%= if ready?(@available_ships) and not @game_in_session? do %>
     <button id="confirm-ready" phx-click="confirm_ready">Ready</button>
   <% end %>
 
@@ -40,6 +40,6 @@
 
 <%= live_component @socket, BoardLiveComponent, board: empty_board(), action: "tile" %>
 
-<%= unless is_nil(@game) do %>
+<%= if @game_in_session? do %>
   <%= live_component @socket, BoardLiveComponent, board: empty_board(), action: "guess" %>
 <% end %>

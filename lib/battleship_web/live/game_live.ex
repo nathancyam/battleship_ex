@@ -2,9 +2,9 @@ defmodule BattleshipWeb.GameLive do
   use BattleshipWeb, :live_view
 
   require Logger
-  alias BattleshipWeb.{BoardLiveComponent}
+  alias BattleshipWeb.{BoardLiveComponent, TileLiveComponent}
   alias BattleshipWeb.GameLive.{GuessAction, GuessResult, PlaceAction}
-  alias Battleship.Core.{Game, Player, Ship}
+  alias Battleship.Core.{ConsoleRenderer, Game, Player, Ship}
   alias Battleship.Setup
 
   @empty_selection {{nil, nil}, {nil, nil}}
@@ -19,16 +19,18 @@ defmodule BattleshipWeb.GameLive do
       socket
       |> assign(
         game_id: game_id,
+        game_pid: nil,
         player: Player.new("Dude"),
         available_ships: Ship.all(),
         selection: @empty_selection,
         ready?: false,
         winner?: nil,
         designation: nil,
-        game: nil,
+        game_in_session?: false,
         opponent: nil,
         hit_or_miss: nil,
         error_msg: nil,
+        turn_lock?: false,
         player_joined?: false
       )
 
@@ -56,7 +58,6 @@ defmodule BattleshipWeb.GameLive do
     default_assigns = [
       designation: whoami,
       player: player,
-      game: game,
       error_msg: nil,
       opponent: opponent_process
     ]
@@ -85,6 +86,21 @@ defmodule BattleshipWeb.GameLive do
     {:noreply, assign(socket, :player_joined?, false)}
   end
 
+  def handle_cast({:receive_selection_from_opponent, tile, tiles}, socket) do
+    {guess_tile, placement_tile} = tiles
+
+    tile_id = TileLiveComponent.id_by_selection(tile)
+    guess_id = "guess-#{tile_id}"
+    place_id = "tile-#{tile_id}"
+
+    # Update the guess board whether it was a hit or miss
+    send_update(TileLiveComponent, id: guess_id, icon: ConsoleRenderer.to_emoji(guess_tile))
+
+    # Update the player placement board with X or :boom:
+    send_update(TileLiveComponent, id: place_id, icon: ConsoleRenderer.to_emoji(placement_tile))
+    {:noreply, socket}
+  end
+
   def handle_info(
         {:tile, "tile", from, %{"row" => _row, "column" => _column} = tile_selection},
         socket
@@ -107,8 +123,7 @@ defmodule BattleshipWeb.GameLive do
     else
       {:noreply,
        socket
-       |> (&GuessAction.guess(&2, &1)).(tile_selection)
-       |> notify_opponent_of_game_change()}
+       |> (&GuessAction.guess(&2, &1)).(tile_selection)}
     end
   end
 
@@ -130,21 +145,18 @@ defmodule BattleshipWeb.GameLive do
 
   def ready?(available_ships), do: Enum.count(available_ships) == 0
 
-  def can_place?(%{assigns: %{game: game}}), do: is_nil(game)
+  def can_place?(%{assigns: %{game_in_session?: game_in_session?}}), do: game_in_session? == false
 
   @spec can_guess?(socket :: Phoenix.LiveView.Socket.t()) :: boolean()
-  def can_guess?(socket) do
-    %{game: game, designation: des} = socket.assigns
-    game.active_turn == des
-  end
+  def can_guess?(socket), do: !socket.assigns.turn_lock?
 
-  @spec notify_opponent_of_game_change(res :: GuessResult.t()) ::
-          Phoenix.LiveView.Socket.t()
-  defp notify_opponent_of_game_change(guess_result) do
-    %{opponent: opponent, game: game, designation: des} = guess_result.socket.assigns
-    GenServer.call(opponent, {:receive_from_opponent, game, self(), des, guess_result})
-    guess_result.socket
-  end
+  # @spec notify_opponent_of_game_change(res :: GuessResult.t()) ::
+  #         Phoenix.LiveView.Socket.t()
+  # defp notify_opponent_of_game_change(guess_result) do
+  #   %{opponent: opponent, game: game, designation: des} = guess_result.socket.assigns
+  #   GenServer.call(opponent, {:receive_from_opponent, game, self(), des, guess_result})
+  #   guess_result.socket
+  # end
 
   @spec invert_designation(atom()) :: atom()
   defp invert_designation(:player1), do: :player2
@@ -167,24 +179,8 @@ defmodule BattleshipWeb.GameLive do
   @spec do_game_setup(game_pid :: pid(), socket :: Phoenix.LiveView.Socket.t()) ::
           Phoenix.LiveView.Socket.t()
   defp do_game_setup(game_pid, socket) do
-    {game, player1, player2} = Setup.start_game(game_pid)
-
-    assigns =
-      case {player1, player2} do
-        {player1, player2} when player1 == self() ->
-          [player: game.player1, designation: :player1, opponent: player2, game: game]
-
-        {player1, player2} when player2 == self() ->
-          [
-            player: game.player2,
-            designation: :player2,
-            opponent: player1,
-            game: Game.change_active_turn(game)
-          ]
-      end
-
     socket
     |> assign(:ready?, true)
-    |> assign(assigns)
+    |> assign(Setup.start_game(game_pid))
   end
 end
