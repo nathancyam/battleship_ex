@@ -47,6 +47,10 @@ defmodule BattleshipWeb.GameLive do
     {:noreply, new_socket}
   end
 
+  def handle_cast(:game_over, socket) do
+    {:noreply, socket |> assign(:turn_lock?, true) |> assign(:winner?, false)}
+  end
+
   def handle_cast(:player_joined, socket) do
     Logger.info("another player has joined during setup phase")
     {:noreply, assign(socket, :player_joined?, true)}
@@ -100,6 +104,10 @@ defmodule BattleshipWeb.GameLive do
        socket
        |> (&GuessAction.guess(&2, &1)).(tile_selection)}
     end
+  end
+
+  def handle_info(:invalid_selection, socket) do
+    {:noreply, assign(socket, :error_msg, "Invalid tile selection!")}
   end
 
   def empty_board() do

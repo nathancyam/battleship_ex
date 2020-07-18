@@ -122,12 +122,23 @@ defmodule BattleshipWeb.GameLiveTest do
       assert error_html =~ "Can not place ships while game is active!"
     end
 
+    test "stops users from previously selected tiles", %{player1: player1, player2: player2} do
+      player2 |> element("#guess-1-0") |> render_click()
+      player1 |> element("#guess-1-0") |> render_click()
+
+      player2
+      |> element("#guess-1-0")
+      |> render_click()
+
+      assert has_element?(player2, ".game-error-msg", "Invalid tile selection!")
+    end
+
     test "stops users from spam guessing", %{
       player1: player1,
       player2: player2
     } do
       player2 |> element("#guess-1-0") |> render_click()
-      player2 |> element("#guess-1-0") |> render_click()
+      player2 |> element("#guess-1-2") |> render_click()
 
       assert has_element?(player2, ".game-error-msg", "Not your turn!")
       player1 |> element("#guess-3-3") |> render_click()

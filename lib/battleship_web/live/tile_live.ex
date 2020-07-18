@@ -10,14 +10,18 @@ defmodule BattleshipWeb.TileLiveComponent do
   end
 
   def handle_event(_action, %{"row" => row, "column" => column}, socket) do
-    send(
-      self(),
-      {:tile, socket.assigns.action, socket.assigns.id,
-       %{
-         "row" => row,
-         "column" => column
-       }}
-    )
+    if click_allowed?(socket.assigns.action, socket.assigns.icon) do
+      send(
+        self(),
+        {:tile, socket.assigns.action, socket.assigns.id,
+         %{
+           "row" => row,
+           "column" => column
+         }}
+      )
+    else
+      send(self(), :invalid_selection)
+    end
 
     {:noreply, socket}
   end
@@ -40,5 +44,13 @@ defmodule BattleshipWeb.TileLiveComponent do
           assign
       end
     )
+  end
+
+  defp click_allowed?("guess", icon) do
+    icon == "❓"
+  end
+
+  defp click_allowed?("tile", icon) do
+    icon != "🚢"
   end
 end
