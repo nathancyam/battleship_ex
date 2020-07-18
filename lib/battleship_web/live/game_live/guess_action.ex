@@ -4,28 +4,27 @@ defmodule BattleshipWeb.GameLive.GuessAction do
   import Phoenix.LiveView, only: [assign: 3]
 
   alias Phoenix.LiveView.Socket
-  alias Battleship.Core.{Game}
   alias Battleship.Setup
   alias BattleshipWeb.GameLive.GuessResult
 
   @type point :: {non_neg_integer(), non_neg_integer()}
 
-  @spec guess(tile_selection :: map(), socket :: Socket.t()) :: GuessResult.t()
+  @spec guess(tile_selection :: map(), socket :: Socket.t()) :: Socket.t()
   def guess(%{"row" => row, "column" => column}, socket) do
     tuple = {String.to_integer(row), String.to_integer(column)}
     do_guess(socket, tuple)
   end
 
   @spec do_guess(
-          socket :: Phoenix.LiveView.Socket.t(),
+          socket :: Socket.t(),
           guess_type :: {non_neg_integer(), non_neg_integer()}
-        ) :: GuessResult.t()
+        ) :: Socket.t()
   defp do_guess(socket, guess_tuple) do
     %{designation: des, game_pid: pid} = socket.assigns
     get_player = &Map.get(&1, des)
 
     case Setup.guess(pid, guess_tuple) do
-      {:continue, hit_or_miss, updated_game} ->
+      {:continue, hit_or_miss, _updated_game} ->
         new_socket =
           socket
           |> assign(

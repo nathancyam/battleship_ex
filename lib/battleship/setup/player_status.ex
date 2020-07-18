@@ -1,18 +1,18 @@
 defmodule Battleship.Setup.PlayerStatus do
   alias Battleship.Core.Player
 
-  defstruct [:pid, :ready?, :player]
+  defstruct [:view, :ready?, :player]
 
   @type t :: %__MODULE__{
-          pid: pid(),
+          view: pid(),
           ready?: boolean(),
           player: Player.t() | nil
         }
 
-  @spec new(player_pid :: pid()) :: t()
-  def new(player_pid) do
+  @spec new(player_view :: pid()) :: t()
+  def new(player_view) do
     %__MODULE__{
-      pid: player_pid,
+      view: player_view,
       ready?: false,
       player: nil
     }

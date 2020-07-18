@@ -60,12 +60,12 @@ defmodule Battleship.Setup do
     player2_assigns = [designation: :player2, game_in_session?: true, game_pid: self()]
 
     {game, return_assigns, dispatch_assigns} =
-      case {player1.pid, player2.pid} do
+      case {player1.view, player2.view} do
         {^from, _} ->
-          {game, player1_assigns, {player2.pid, player2_assigns}}
+          {game, player1_assigns, {player2.view, player2_assigns}}
 
         {_, ^from} ->
-          {Game.change_active_turn(game), player2_assigns, {player1.pid, player1_assigns}}
+          {Game.change_active_turn(game), player2_assigns, {player1.view, player1_assigns}}
       end
 
     {:reply, return_assigns, %{new_state | game: game}, {:continue, {:second, dispatch_assigns}}}
@@ -120,7 +120,7 @@ defmodule Battleship.Setup do
 
   @spec opponent_process(current_player :: pid(), state :: State.t()) :: pid() | nil
   defp opponent_process(current_player, %{player1: player1, player2: player2}) do
-    case {player1.pid, player2.pid} do
+    case {player1.view, player2.view} do
       {^current_player, opponent} ->
         opponent
 
