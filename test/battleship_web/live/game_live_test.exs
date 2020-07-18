@@ -112,6 +112,16 @@ defmodule BattleshipWeb.GameLiveTest do
       %{player1: player1, player2: player2}
     end
 
+    test "shows message informing player turns", %{player1: player1, player2: player2} do
+      assert has_element?(player1, ".turn-status", "Waiting on other player...")
+      assert has_element?(player2, ".turn-status", "Your turn")
+
+      player2 |> element("#guess-1-0") |> render_click()
+
+      assert has_element?(player1, ".turn-status", "Your turn")
+      assert has_element?(player2, ".turn-status", "Waiting on other player...")
+    end
+
     test "shows error message informing placement can not occur mid game", %{
       player2: player2
     } do

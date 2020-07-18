@@ -27,7 +27,6 @@ defmodule BattleshipWeb.GameLive do
         winner?: nil,
         designation: nil,
         game_in_session?: false,
-        opponent: nil,
         hit_or_miss: nil,
         error_msg: nil,
         turn_lock?: false,
@@ -108,15 +107,6 @@ defmodule BattleshipWeb.GameLive do
 
   def handle_info(:invalid_selection, socket) do
     {:noreply, assign(socket, :error_msg, "Invalid tile selection!")}
-  end
-
-  def empty_board() do
-    for x <- Enum.to_list(0..9),
-        y <- Enum.to_list(0..9) do
-      %{row: x, column: y}
-    end
-    |> Enum.chunk_every(10)
-    |> Enum.with_index()
   end
 
   def first_ship(available_ships),

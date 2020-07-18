@@ -8,6 +8,12 @@
   </div>
 <% end %>
 
+<%= if @turn_lock? do %>
+  <span class="turn-status">Waiting on other player...</span>
+<% else %>
+  <span class="turn-status">Your turn</span>
+<% end %>
+
 <%= unless is_nil(@hit_or_miss) do %>
   <h3><%= @hit_or_miss %></h3>
 <% end %>
@@ -38,8 +44,8 @@
   <% end %>
 </div>
 
-<%= live_component @socket, BoardLiveComponent, board: empty_board(), action: "tile" %>
+<%= live_component @socket, BoardLiveComponent, action: "tile" %>
 
 <%= if @game_in_session? do %>
-  <%= live_component @socket, BoardLiveComponent, board: empty_board(), action: "guess" %>
+  <%= live_component @socket, BoardLiveComponent, action: "guess" %>
 <% end %>
