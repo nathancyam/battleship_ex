@@ -55,7 +55,7 @@ defmodule BattleshipWeb.GameLive.GuessAction do
 
         socket
         |> assign(:winner?, player == winner)
-          |> assign(:turn_lock?, true)
+        |> assign(:turn_lock?, true)
     end
   end
 end

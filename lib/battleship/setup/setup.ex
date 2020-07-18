@@ -22,9 +22,7 @@ defmodule Battleship.Setup do
     do: GenServer.call(server, {:add_player, player_socket})
 
   @spec start_game(server :: pid()) :: Keyword.t()
-  def start_game(server) do
-    GenServer.call(server, :start_game)
-  end
+  def start_game(server), do: GenServer.call(server, :start_game)
 
   @spec toggle_player_ready(server :: pid(), player_socket :: pid(), player :: Player.t()) ::
           {:ok, new_state :: State.t(), pid()}
@@ -36,10 +34,22 @@ defmodule Battleship.Setup do
 
   @spec guess(server :: pid(), tile :: {non_neg_integer(), non_neg_integer()}) ::
           Game.turn_result()
-  def guess(server, tile) do
-    # TODO: Call process update the game state with placement
-    #       Return the result of the selection back to the calling process
-    GenServer.call(server, {:select_tile, tile})
+  def guess(server, tile), do: GenServer.call(server, {:select_tile, tile})
+
+  def handle_call({:add_player, player_socket}, _from, state) do
+    Process.monitor(player_socket)
+
+    case State.add_player(state, player_socket) do
+      {:ok, new_state} = res ->
+        if state.player2 == nil and new_state.player2 != nil do
+          {:reply, res, new_state, {:continue, :player_joined}}
+        else
+          {:reply, res, new_state}
+        end
+
+      {:error, :game_full, state} = res ->
+        {:reply, res, state}
+    end
   end
 
   def handle_call(:start_game, {from, _ref}, state) do
@@ -61,23 +71,7 @@ defmodule Battleship.Setup do
     {:reply, return_assigns, %{new_state | game: game}, {:continue, {:second, dispatch_assigns}}}
   end
 
-  def handle_call({:add_player, player_socket}, _from, state) do
-    Process.monitor(player_socket)
-
-    case State.add_player(state, player_socket) do
-      {:ok, new_state} = res ->
-        if state.player2 == nil and new_state.player2 != nil do
-          {:reply, res, new_state, {:continue, :player_joined}}
-        else
-          {:reply, res, new_state}
-        end
-
-      {:error, :game_full, state} = res ->
-        {:reply, res, state}
-    end
-  end
-
-  def handle_call({:select_tile, tile}, from, state) do
+  def handle_call({:select_tile, tile}, {from, _ref}, state) do
     {guess_result, new_state} = State.guess(state, tile)
     {:reply, guess_result, new_state, {:continue, {:notify_opponent, tile, from}}}
   end
@@ -85,6 +79,16 @@ defmodule Battleship.Setup do
   def handle_call({:toggle_player_ready, player_socket, player}, _from, state) do
     new_state = State.toggle_readiness(state, player_socket, player)
     {:reply, {:ok, new_state}, new_state}
+  end
+
+  def handle_info({:DOWN, _ref, :process, down_player, _reason}, state) do
+    new_state = State.clear_player(state, down_player)
+
+    if State.no_players?(new_state) do
+      {:stop, :normal, new_state}
+    else
+      {:noreply, new_state}
+    end
   end
 
   def handle_continue({:second, {player_pid, assigns}}, state) do
@@ -98,8 +102,8 @@ defmodule Battleship.Setup do
   end
 
   def handle_continue({:notify_opponent, tile, player_pid}, state) do
-    case Map.get(state, state.game.active_turn) do
-      %{pid: opponent_pid} when is_pid(opponent_pid) ->
+    case opponent_process(player_pid, state) do
+      opponent_pid when is_pid(opponent_pid) ->
         tiles =
           state.game
           |> Map.get(state.game.active_turn)
@@ -114,13 +118,17 @@ defmodule Battleship.Setup do
     {:noreply, state}
   end
 
-  def handle_info({:DOWN, _ref, :process, down_player, _reason}, state) do
-    new_state = State.clear_player(state, down_player)
+  @spec opponent_process(current_player :: pid(), state :: State.t()) :: pid() | nil
+  defp opponent_process(current_player, %{player1: player1, player2: player2}) do
+    case {player1.pid, player2.pid} do
+      {^current_player, opponent} ->
+        opponent
 
-    if State.no_players?(new_state) do
-      {:stop, :normal, new_state}
-    else
-      {:noreply, new_state}
+      {opponent, ^current_player} ->
+        opponent
+
+      _ ->
+        nil
     end
   end
 end

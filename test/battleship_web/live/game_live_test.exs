@@ -153,13 +153,8 @@ defmodule BattleshipWeb.GameLiveTest do
         {player2 |> element(tile1) |> render_click(), player1 |> element(tile2) |> render_click()}
       end)
 
-      player2_html = player2 |> element(".game_over") |> render()
-      player1_html = player1 |> element(".game_over") |> render()
-
-      assert player2_html =~ "You win!"
-      refute player2_html =~ "You lose!"
-      assert player1_html =~ "You lose!"
-      refute player1_html =~ "You win!"
+      assert has_element?(player2, ".game-over", "You win!")
+      assert has_element?(player1, ".game-over", "You lose!")
     end
   end
 end

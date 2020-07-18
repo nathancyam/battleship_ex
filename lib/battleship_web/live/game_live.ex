@@ -3,8 +3,8 @@ defmodule BattleshipWeb.GameLive do
 
   require Logger
   alias BattleshipWeb.{BoardLiveComponent, TileLiveComponent}
-  alias BattleshipWeb.GameLive.{GuessAction, GuessResult, PlaceAction}
-  alias Battleship.Core.{ConsoleRenderer, Game, Player, Ship}
+  alias BattleshipWeb.GameLive.{GuessAction, PlaceAction}
+  alias Battleship.Core.{ConsoleRenderer, Player, Ship}
   alias Battleship.Setup
 
   @empty_selection {{nil, nil}, {nil, nil}}
@@ -47,35 +47,6 @@ defmodule BattleshipWeb.GameLive do
     {:noreply, new_socket}
   end
 
-  def handle_call(
-        {:receive_from_opponent, game, opponent_process, from, opponent_guess},
-        _from,
-        socket
-      ) do
-    whoami = invert_designation(from)
-    player = Map.get(game, whoami)
-
-    default_assigns = [
-      designation: whoami,
-      player: player,
-      error_msg: nil,
-      opponent: opponent_process
-    ]
-
-    GuessResult.react_to_opponent_guess(player, opponent_guess)
-
-    if game.over? do
-      {:reply, :ok,
-       socket
-       |> assign(:winner?, false)
-       |> assign(default_assigns)}
-    else
-      {:reply, :ok,
-       socket
-       |> assign(default_assigns)}
-    end
-  end
-
   def handle_cast(:player_joined, socket) do
     Logger.info("another player has joined during setup phase")
     {:noreply, assign(socket, :player_joined?, true)}
@@ -98,12 +69,12 @@ defmodule BattleshipWeb.GameLive do
 
     # Update the player placement board with X or :boom:
     send_update(TileLiveComponent, id: place_id, icon: ConsoleRenderer.to_emoji(placement_tile))
+
+    # Clear existing error messages and unlock turn
     {:noreply, socket |> assign(:turn_lock?, false) |> assign(:error_msg, nil)}
   end
 
-  def handle_cast({:update_assigns, assigns}, socket) do
-    {:noreply, assign(socket, assigns)}
-  end
+  def handle_cast({:update_assigns, assigns}, socket), do: {:noreply, assign(socket, assigns)}
 
   def handle_info(
         {:tile, "tile", from, %{"row" => _row, "column" => _column} = tile_selection},
@@ -153,18 +124,6 @@ defmodule BattleshipWeb.GameLive do
 
   @spec can_guess?(socket :: Phoenix.LiveView.Socket.t()) :: boolean()
   def can_guess?(socket), do: !socket.assigns.turn_lock?
-
-  # @spec notify_opponent_of_game_change(res :: GuessResult.t()) ::
-  #         Phoenix.LiveView.Socket.t()
-  # defp notify_opponent_of_game_change(guess_result) do
-  #   %{opponent: opponent, game: game, designation: des} = guess_result.socket.assigns
-  #   GenServer.call(opponent, {:receive_from_opponent, game, self(), des, guess_result})
-  #   guess_result.socket
-  # end
-
-  @spec invert_designation(atom()) :: atom()
-  defp invert_designation(:player1), do: :player2
-  defp invert_designation(:player2), do: :player1
 
   @spec handle_readiness(
           res :: {:ok, Setup.State.t(), pid()} | :not_started,
