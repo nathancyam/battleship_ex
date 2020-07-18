@@ -11,7 +11,7 @@ defmodule Battleship.Setup.StateTest do
       {:ok, pid} = Agent.start(fn -> nil end)
       {:ok, new_state} = State.add_player(state, pid)
 
-      assert new_state.player1.pid == pid
+      assert new_state.player1.view == pid
       refute new_state.player1.ready?
 
       assert new_state.player2 == nil
@@ -23,10 +23,10 @@ defmodule Battleship.Setup.StateTest do
       {:ok, new_state} = State.add_player(state, pid)
       {:ok, new_state} = State.add_player(new_state, second)
 
-      assert new_state.player1.pid == pid
+      assert new_state.player1.view == pid
       refute new_state.player1.ready?
 
-      assert new_state.player2.pid == second
+      assert new_state.player2.view == second
       refute new_state.player2.ready?
     end
 

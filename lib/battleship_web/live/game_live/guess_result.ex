@@ -10,18 +10,17 @@ defmodule BattleshipWeb.GameLive.GuessResult do
 
   @type t :: %__MODULE__{
           hit_result: :miss | :hit,
-          guess: GuessAction.point(),
-          socket: Socket.t()
+          guess: GuessAction.point()
         }
 
   @spec hit(guess :: GuessAction.point(), socket :: Socket.t()) :: t()
-  def hit(guess, socket) do
-    %__MODULE__{hit_result: :hit, guess: guess, socket: socket}
+  def hit(guess, _socket) do
+    %__MODULE__{hit_result: :hit, guess: guess}
   end
 
   @spec miss(guess :: GuessAction.point(), socket :: Socket.t()) :: t()
-  def miss(guess, socket) do
-    %__MODULE__{hit_result: :miss, guess: guess, socket: socket}
+  def miss(guess, _socket) do
+    %__MODULE__{hit_result: :miss, guess: guess}
   end
 
   @spec update_selected_tile(result :: t()) :: t()
@@ -48,10 +47,10 @@ defmodule BattleshipWeb.GameLive.GuessResult do
     guess_id = "guess-#{tile_id}"
     place_id = "tile-#{tile_id}"
 
-    # TODO: Update the guess board whether it was a hit or miss
+    # Update the guess board whether it was a hit or miss
     send_update(TileLiveComponent, id: guess_id, icon: ConsoleRenderer.to_emoji(guess_tile))
 
-    # TODO: Update the player placement board with X or :boom:
+    # Update the player placement board with X or :boom:
     send_update(TileLiveComponent, id: place_id, icon: ConsoleRenderer.to_emoji(placement_tile))
     result
   end

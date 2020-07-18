@@ -122,20 +122,27 @@ defmodule BattleshipWeb.GameLiveTest do
       assert error_html =~ "Can not place ships while game is active!"
     end
 
+    test "stops users from previously selected tiles", %{player1: player1, player2: player2} do
+      player2 |> element("#guess-1-0") |> render_click()
+      player1 |> element("#guess-1-0") |> render_click()
+
+      player2
+      |> element("#guess-1-0")
+      |> render_click()
+
+      assert has_element?(player2, ".game-error-msg", "Invalid tile selection!")
+    end
+
     test "stops users from spam guessing", %{
       player1: player1,
       player2: player2
     } do
       player2 |> element("#guess-1-0") |> render_click()
-      player2 |> element("#guess-1-0") |> render_click()
+      player2 |> element("#guess-1-2") |> render_click()
 
-      error_html = player2 |> element(".game-error-msg") |> render()
-      assert error_html =~ "Not your turn!"
+      assert has_element?(player2, ".game-error-msg", "Not your turn!")
       player1 |> element("#guess-3-3") |> render_click()
-
-      no_error_html = player2 |> render()
-
-      refute no_error_html =~ "Not your turn!"
+      refute has_element?(player2, ".game-error-msg")
     end
 
     test "runs through a game with player 2 winning", %{
@@ -157,13 +164,8 @@ defmodule BattleshipWeb.GameLiveTest do
         {player2 |> element(tile1) |> render_click(), player1 |> element(tile2) |> render_click()}
       end)
 
-      player2_html = player2 |> element(".game_over") |> render()
-      player1_html = player1 |> element(".game_over") |> render()
-
-      assert player2_html =~ "You win!"
-      refute player2_html =~ "You lose!"
-      assert player1_html =~ "You lose!"
-      refute player1_html =~ "You win!"
+      assert has_element?(player2, ".game-over", "You win!")
+      assert has_element?(player1, ".game-over", "You lose!")
     end
   end
 end
