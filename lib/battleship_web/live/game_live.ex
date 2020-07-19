@@ -2,6 +2,7 @@ defmodule BattleshipWeb.GameLive do
   use BattleshipWeb, :live_view
 
   require Logger
+  alias Phoenix.LiveView.Socket
   alias BattleshipWeb.{BoardLiveComponent, TileLiveComponent}
   alias BattleshipWeb.GameLive.{GuessAction, PlaceAction}
   alias Battleship.Core.{ConsoleRenderer, Player, Ship}
@@ -94,9 +95,9 @@ defmodule BattleshipWeb.GameLive do
 
   def handle_info(
         {:tile, "guess", _from, %{"row" => _row, "column" => _column} = tile_selection},
-        socket
+        %{assigns: %{turn_lock?: turn_lock?}} = socket
       ) do
-    if not can_guess?(socket) do
+    if turn_lock? do
       {:noreply, assign(socket, :error_msg, "Not your turn!")}
     else
       {:noreply,
@@ -120,13 +121,10 @@ defmodule BattleshipWeb.GameLive do
 
   def can_place?(%{assigns: %{game_in_session?: game_in_session?}}), do: game_in_session? == false
 
-  @spec can_guess?(socket :: Phoenix.LiveView.Socket.t()) :: boolean()
-  def can_guess?(socket), do: !socket.assigns.turn_lock?
-
   @spec handle_readiness(
           res :: {:ok, Setup.State.t(), pid()} | :not_started,
-          socket :: Phoenix.LiveView.Socket.t()
-        ) :: Phoenix.LiveView.Socket.t()
+          socket :: Socket.t()
+        ) :: Socket.t()
   defp handle_readiness({:ok, state, game_pid}, socket) do
     if Setup.State.game_ready?(state) do
       do_game_setup(game_pid, socket)
@@ -137,8 +135,7 @@ defmodule BattleshipWeb.GameLive do
 
   defp handle_readiness(_, socket), do: assign(socket, :ready?, !socket.assigns.ready?)
 
-  @spec do_game_setup(game_pid :: pid(), socket :: Phoenix.LiveView.Socket.t()) ::
-          Phoenix.LiveView.Socket.t()
+  @spec do_game_setup(game_pid :: pid(), socket :: Socket.t()) :: Socket.t()
   defp do_game_setup(game_pid, socket) do
     socket
     |> assign(:ready?, true)
