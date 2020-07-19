@@ -99,3 +99,21 @@
 .game-grid {
   display: inline-block;
 }
+
+.board.board--game-active {
+  #game--grid-tile {
+    right: 3rem;
+    position: absolute;
+
+    .tile {
+      cursor: not-allowed;
+      font-size: 1.5rem;
+    }
+  }
+
+  #game--grid-guess {
+    .tile {
+      font-size: 3.5rem;
+    }
+  }
+}
