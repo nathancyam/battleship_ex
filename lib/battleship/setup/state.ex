@@ -12,6 +12,7 @@ defmodule Battleship.Setup.State do
           game: Game.t() | nil
         }
 
+  @spec new() :: t()
   def new() do
     %__MODULE__{
       player1: nil,
@@ -58,13 +59,16 @@ defmodule Battleship.Setup.State do
 
   @spec dispatch_player_joined(state :: t()) :: :ok
   def dispatch_player_joined(%{player1: player1, player2: player2}) do
-    if player1 != nil and Process.alive?(player1.view) do
-      GenServer.cast(player1.view, :player_joined)
-    end
+    [player1, player2]
+    |> Enum.filter(fn
+      nil ->
+        false
 
-    if player2 != nil and Process.alive?(player2.view) do
-      GenServer.cast(player2.view, :player_joined)
-    end
+      %{view: view} ->
+        Process.alive?(view)
+    end)
+    |> Enum.map(&Map.get(&1, :view))
+    |> Enum.each(&GenServer.cast(&1, :player_joined))
   end
 
   @spec clear_player(state :: t(), player_pid :: pid()) :: t()
