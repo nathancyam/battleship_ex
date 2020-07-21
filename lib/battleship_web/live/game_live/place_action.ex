@@ -16,6 +16,15 @@ defmodule BattleshipWeb.GameLive.PlaceAction do
 
   @empty_selection {{nil, nil}, {nil, nil}}
 
+  @doc """
+  Express the intent to place a ship's end on the given coordinate. This coordinate
+  is applied against the socket's current selection. If the combination of the
+  existing selection and the tile form a ship placement, the selection is emptied
+  for the next ship to be placed (see `create_selection/2`).
+
+  For every selection, notify the tile component that were changed. In the
+  instance of a row/column of ship icons, update all them coordinately.
+  """
   @spec place(tile_selection :: map(), from :: String.t(), socket :: Socket.t()) :: Socket.t()
   def place(%{"row" => _row, "column" => _column} = tile_selection, from, socket) do
     %{available_ships: ships, player: player} = socket.assigns
