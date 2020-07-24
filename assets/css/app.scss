@@ -100,6 +100,12 @@
   display: inline-block;
 }
 
+.board.board--game-inactive {
+  #game--grid-guess {
+    display: none;
+  }
+}
+
 .board.board--game-active {
   #game--grid-tile {
     right: 3rem;
