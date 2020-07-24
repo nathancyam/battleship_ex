@@ -44,10 +44,7 @@
   <% end %>
 </div>
 
-<div class="board<%= if @game_in_session?, do: " board--game-active" %>">
-<%= if @game_in_session? do %>
+<div class="board<%= if @game_in_session?, do: " board--game-active", else: "board--game-inactive" %>">
   <%= live_component @socket, BoardLiveComponent, action: "guess" %>
-<% end %>
-
-<%= live_component @socket, BoardLiveComponent, action: "tile" %>
+  <%= live_component @socket, BoardLiveComponent, action: "tile" %>
 </div>

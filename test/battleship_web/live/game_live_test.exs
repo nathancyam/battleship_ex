@@ -30,6 +30,13 @@ defmodule BattleshipWeb.GameLiveTest do
     end
   end
 
+  def build_player_view(game_url) do
+    player_conn = build_conn()
+    {:ok, player, _} = live(player_conn, game_url)
+    {player, _} = complete_placement(player)
+    player
+  end
+
   describe "when the game endpoint is hit" do
     test "renders the game page", %{conn: conn} do
       {:ok, lv, disconnected_html} = live(conn, "/game/aaa")
@@ -95,17 +102,11 @@ defmodule BattleshipWeb.GameLiveTest do
 
   describe "when the game is being played" do
     setup do
-      player1_conn = build_conn()
-      player2_conn = build_conn()
+      [player1, player2] =
+        0..1
+        |> Enum.map(fn _ -> build_player_view("/game/bzz") end)
 
-      {:ok, player1, _} = live(player1_conn, "/game/bzz")
-      {:ok, player2, _} = live(player2_conn, "/game/bzz")
-
-      {player1, _} = complete_placement(player1)
-      {player2, _} = complete_placement(player2)
-
-      waiting_html = player1 |> element("#confirm-ready") |> render_click()
-      refute waiting_html =~ "guess-"
+      player1 |> element("#confirm-ready") |> render_click()
       ready_html = player2 |> element("#confirm-ready") |> render_click()
       assert ready_html =~ "guess-"
 
