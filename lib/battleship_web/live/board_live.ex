@@ -7,7 +7,7 @@ defmodule BattleshipWeb.BoardLiveComponent do
     ~L"""
     <div id="game--grid-<%= @action %>" class="game-grid">
     <%= for {line, count} <- empty_board() do %>
-      <div id="<%= line_id(@action, count) %>" phx-update="replace">
+      <div id="<%= line_id(@action, count) %>">
       <%= for tile <- line do %>
         <%= live_component @socket, TileLiveComponent, id: tile_id(@action, tile), action: @action, tile: tile %>
       <% end %>
