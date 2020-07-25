@@ -1,4 +1,10 @@
 defmodule BattleshipWeb.GameLive.PlaceAction do
+  @moduledoc """
+  Module that contains the main function that expresses the intent to place a
+  ship on a given tile. In order for a placement to be valid, it is necessary
+  to have an existing selection.
+  """
+
   require Logger
 
   import Phoenix.LiveView, only: [assign: 3, send_update: 2]
