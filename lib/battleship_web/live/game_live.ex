@@ -65,6 +65,7 @@ defmodule BattleshipWeb.GameLive do
     {guess_tile, placement_tile} = tiles
 
     tile_id = TileLiveComponent.id_by_selection(tile)
+
     guess_id = "guess-#{tile_id}"
     place_id = "tile-#{tile_id}"
 

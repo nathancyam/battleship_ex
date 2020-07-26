@@ -26,6 +26,10 @@ defmodule BattleshipWeb.TileLiveComponent do
     {:noreply, socket}
   end
 
+  @doc """
+  Convert the coordinate to a string representation.
+  """
+  @spec id_by_selection(coordinate :: tuple()) :: String.t()
   def id_by_selection({row, column}) do
     "#{row}-#{column}"
   end
