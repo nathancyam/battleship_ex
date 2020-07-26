@@ -111,15 +111,19 @@ defmodule BattleshipWeb.GameLive do
     {:noreply, assign(socket, :error_msg, "Invalid tile selection!")}
   end
 
+  @spec first_ship(available_ships :: [Ship.t()]) :: String.t()
   def first_ship(available_ships),
     do:
       List.first(available_ships)
-      |> Ship.label()
+      |> ship_name()
 
+  @spec ship_name(ship :: Ship.t()) :: String.t()
   def ship_name(ship), do: Ship.label(ship)
 
+  @spec ready?(available_ships :: [Ship.t()]) :: boolean()
   def ready?(available_ships), do: Enum.count(available_ships) == 0
 
+  @spec can_place?(socket :: Socket.t()) :: boolean()
   def can_place?(%{assigns: %{game_in_session?: game_in_session?}}), do: game_in_session? == false
 
   @spec handle_readiness(

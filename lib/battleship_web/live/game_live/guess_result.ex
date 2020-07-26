@@ -2,7 +2,6 @@ defmodule BattleshipWeb.GameLive.GuessResult do
   import Phoenix.LiveView, only: [send_update: 2]
 
   alias Phoenix.LiveView.Socket
-  alias Battleship.Core.{ConsoleRenderer, Player}
   alias BattleshipWeb.GameLive.GuessAction
   alias BattleshipWeb.TileLiveComponent
 
@@ -36,22 +35,6 @@ defmodule BattleshipWeb.GameLive.GuessResult do
 
     tile_id = TileLiveComponent.id_by_selection(guess)
     send_update(TileLiveComponent, id: "guess-#{tile_id}", icon: icon)
-    result
-  end
-
-  @spec react_to_opponent_guess(player :: Player.t(), result :: t()) :: t()
-  def react_to_opponent_guess(player, %__MODULE__{} = result) do
-    {guess_tile, placement_tile} = Player.tiles_at_boards(player, result.guess)
-
-    tile_id = TileLiveComponent.id_by_selection(result.guess)
-    guess_id = "guess-#{tile_id}"
-    place_id = "tile-#{tile_id}"
-
-    # Update the guess board whether it was a hit or miss
-    send_update(TileLiveComponent, id: guess_id, icon: ConsoleRenderer.to_emoji(guess_tile))
-
-    # Update the player placement board with X or :boom:
-    send_update(TileLiveComponent, id: place_id, icon: ConsoleRenderer.to_emoji(placement_tile))
     result
   end
 end
