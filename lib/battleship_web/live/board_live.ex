@@ -3,6 +3,8 @@ defmodule BattleshipWeb.BoardLiveComponent do
 
   alias BattleshipWeb.TileLiveComponent
 
+  @type tile :: %{row: non_neg_integer(), column: non_neg_integer()}
+
   def render(assigns) do
     ~L"""
     <div id="game--grid-<%= @action %>" class="game-grid">
@@ -17,6 +19,7 @@ defmodule BattleshipWeb.BoardLiveComponent do
     """
   end
 
+  @spec empty_board() :: [{tile(), non_neg_integer()}]
   def empty_board() do
     for x <- Enum.to_list(0..9),
         y <- Enum.to_list(0..9) do
@@ -26,6 +29,7 @@ defmodule BattleshipWeb.BoardLiveComponent do
     |> Enum.with_index()
   end
 
+  @spec line_id(action :: atom(), line :: String.t()) :: String.t()
   def line_id(action, line), do: "#{action}-line-#{line}"
 
   def tile_id(action, tile), do: "#{action}-#{tile.row}-#{tile.column}"
