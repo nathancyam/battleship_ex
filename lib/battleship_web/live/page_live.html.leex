@@ -4,24 +4,26 @@
     <h5 class="title is-5">A Live View Phoenix implementation</h5>
   </div>
   <div class="join-form">
-    <form class=" has-background-white-bis card">
+    <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :submit, class: "has-background-white-bis card"] %>
       <div class="card-content">
         <div class="field">
           <label class="label">Player Name</label>
           <div class="control">
-            <input class="input" type="text" placeholder="Player Name">
+            <%= text_input f, :player_name, class: "input", placeholder: "Player Name" %>
           </div>
+          <%= error_tag f, :player_name %>
         </div>
         <div class="field">
           <label class="label">Game ID</label>
           <div class="control">
-            <input class="input" type="text" placeholder="Game ID">
+            <%= text_input f, :game_id, class: "input", placeholder: "Game ID" %>
           </div>
+          <%= error_tag f, :game_id %>
           <p class="help">Leave blank to generate game ID</p>
         </div>
         <div class="field is-grouped">
           <div class="control">
-            <button class="button is-link">Join or create game</button>
+            <%= submit "Join or create game", [class: "button is-link"] %>
           </div>
         </div>
       </div>

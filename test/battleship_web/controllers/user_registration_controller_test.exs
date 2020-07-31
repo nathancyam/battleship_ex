@@ -3,6 +3,7 @@ defmodule BattleshipWeb.UserRegistrationControllerTest do
 
   import Battleship.AccountsFixtures
 
+  @tag :skip
   describe "GET /users/register" do
     test "renders registration page", %{conn: conn} do
       conn = get(conn, Routes.user_registration_path(conn, :new))
@@ -18,6 +19,7 @@ defmodule BattleshipWeb.UserRegistrationControllerTest do
     end
   end
 
+  @tag :skip
   describe "POST /users/register" do
     @tag :capture_log
     test "creates account and logs the user in", %{conn: conn} do
@@ -39,6 +41,7 @@ defmodule BattleshipWeb.UserRegistrationControllerTest do
       assert response =~ "Log out</a>"
     end
 
+    @tag :skip
     test "render errors for invalid data", %{conn: conn} do
       conn =
         post(conn, Routes.user_registration_path(conn, :create), %{

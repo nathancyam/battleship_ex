@@ -7,6 +7,7 @@ defmodule BattleshipWeb.UserSessionControllerTest do
     %{user: user_fixture()}
   end
 
+  @tag :skip
   describe "GET /users/log_in" do
     test "renders log in page", %{conn: conn} do
       conn = get(conn, Routes.user_session_path(conn, :new))
@@ -22,6 +23,7 @@ defmodule BattleshipWeb.UserSessionControllerTest do
     end
   end
 
+  @tag :skip
   describe "POST /users/log_in" do
     test "logs the user in", %{conn: conn, user: user} do
       conn =
