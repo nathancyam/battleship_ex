@@ -17,13 +17,6 @@ defmodule BattleshipWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", BattleshipWeb do
-    pipe_through :browser
-
-    live "/", PageLive, :index
-    live "/game/:id", GameLive, :index
-  end
-
   # Other scopes may use custom stacks.
   # scope "/api", BattleshipWeb do
   #   pipe_through :api
@@ -76,5 +69,8 @@ defmodule BattleshipWeb.Router do
     get "/users/confirm", UserConfirmationController, :new
     post "/users/confirm", UserConfirmationController, :create
     get "/users/confirm/:token", UserConfirmationController, :confirm
+
+    live "/", PageLive, :index
+    live "/game/:id", GameLive, :index
   end
 end

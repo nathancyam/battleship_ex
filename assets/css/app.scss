@@ -1,6 +1,7 @@
 /* This file is for your main application css. */
-@import "./phoenix.css";
+@import "../node_modules/bulma/bulma.sass";
 @import "../node_modules/nprogress/nprogress.css";
+@import "./splash";
 
 /* LiveView specific classes for your customizations */
 .invalid-feedback {
@@ -88,6 +89,17 @@
 }
 .alert:empty {
   display: none;
+}
+
+html, body  {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body > div, main {
+  width: 100%;
+  height: 100%;
 }
 
 .tile {
