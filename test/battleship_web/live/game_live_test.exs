@@ -95,8 +95,8 @@ defmodule BattleshipWeb.GameLiveTest do
       {:ok, player1, _} = live(player1_conn, "/game/baz")
       {:ok, player2, _} = live(player2_conn, "/game/baz")
 
-      assert has_element?(player1, ".another-player")
-      assert has_element?(player2, ".another-player")
+      assert has_element?(player1, ".game-message")
+      assert has_element?(player2, ".game-message")
     end
   end
 
@@ -114,13 +114,13 @@ defmodule BattleshipWeb.GameLiveTest do
     end
 
     test "shows message informing player turns", %{player1: player1, player2: player2} do
-      assert has_element?(player1, ".turn-status", "Waiting on other player...")
-      assert has_element?(player2, ".turn-status", "Your turn")
+      assert has_element?(player1, ".game-message", "Waiting on other player...")
+      assert has_element?(player2, ".game-message", "Your turn")
 
       player2 |> element("#guess-1-0") |> render_click()
 
-      assert has_element?(player1, ".turn-status", "Your turn")
-      assert has_element?(player2, ".turn-status", "Waiting on other player...")
+      assert has_element?(player1, ".game-message", "Your turn")
+      assert has_element?(player2, ".game-message", "Waiting on other player...")
     end
 
     test "shows error message informing placement can not occur mid game", %{

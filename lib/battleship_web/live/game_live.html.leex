@@ -1,50 +1,52 @@
 <%= unless is_nil(@winner?) do %>
-  <div class="game-over">
-  <%= if @winner? do %>
-    <h2>You win!</h2>
-  <% else %>
-    <h2>You lose!</h2>
-  <% end %>
+  <div class="card">
+    <div class="game-over">
+    <%= if @winner? do %>
+      <h2>You win!</h2>
+    <% else %>
+      <h2>You lose!</h2>
+    <% end %>
+    </div>
   </div>
-<% end %>
-
-<%= if @turn_lock? do %>
-  <span class="turn-status">Waiting on other player...</span>
-<% else %>
-  <span class="turn-status">Your turn</span>
 <% end %>
 
 <%= unless is_nil(@hit_or_miss) do %>
   <h3><%= @hit_or_miss %></h3>
 <% end %>
 
-<%= unless is_nil(@error_msg) do %>
-  <span class="game-error-msg"><%= @error_msg %></span>
-<% end %>
 
-<div class="game-setup">
-  <%= if @player_joined? and not @game_in_session? do %>
-    <p class="another-player">Another player is setting up their board</p>
-  <% end %>
+<div class="tile is-ancestor">
+  <div class="game-setup tile is-vertical is-parent">
+    <div class="tile box is-child">
+      <p class="game-message"><%= @message %></p>
+    </div>
 
-  <%= if ready?(@available_ships) and not @game_in_session? do %>
-    <button id="confirm-ready" phx-click="confirm_ready">Ready</button>
-  <% end %>
-
-  <%= if Enum.count(@available_ships) > 0 do %>
-  <div class="ship-placement">
-    <p>Remaining Ships</p>
-    <ul class="remaining-ships">
-    <%= for ship <- @available_ships do %>
-      <li><%= ship_name(ship) %></li>
+    <%= unless is_nil(@error_msg) do %>
+      <div class="tile box is-child">
+        <span class="game-error-msg"><%= @error_msg %></span>
+      </div>
     <% end %>
-    </ul>
-    <p>Please place the following ship: <%= first_ship(@available_ships) %></p>
-  </div>
-  <% end %>
-</div>
 
-<div class="board<%= if @game_in_session?, do: " board--game-active", else: " board--game-inactive" %>">
-  <%= live_component @socket, BoardLiveComponent, action: "guess" %>
-  <%= live_component @socket, BoardLiveComponent, action: "tile" %>
+    <%= if ready?(@available_ships) and not @game_in_session? do %>
+      <button id="confirm-ready" class="button" phx-click="confirm_ready">Ready</button>
+    <% end %>
+
+    <%= if Enum.count(@available_ships) > 0 do %>
+      <div class="ship-placement tile box is-child">
+        <p class="subtitle">Remaining Ships</p>
+        <ul class="remaining-ships">
+        <%= for ship <- @available_ships do %>
+          <li><%= ship_name(ship) %></li>
+        <% end %>
+        </ul>
+        <p>Please place the following ship: <%= first_ship(@available_ships) %></p>
+      </div>
+    <% end %>
+
+    <div class="tile is-child box board<%= if @game_in_session?, do: " board--game-active", else: " board--game-inactive" %>">
+      <p class="subtitle">Board setup</p>
+      <%= live_component @socket, BoardLiveComponent, action: "guess" %>
+      <%= live_component @socket, BoardLiveComponent, action: "tile" %>
+    </div>
+  </div>
 </div>

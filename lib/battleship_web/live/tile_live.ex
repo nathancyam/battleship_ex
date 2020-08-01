@@ -3,7 +3,7 @@ defmodule BattleshipWeb.TileLiveComponent do
 
   def render(assigns) do
     ~L"""
-    <div id="<%= @id %>" class="tile" phx-click="<%= @action %>" phx-value-row="<%= @tile.row %>" phx-value-column="<%= @tile.column %>" phx-target="<%= @myself %>">
+    <div id="<%= @id %>" class="game-tile" phx-click="<%= @action %>" phx-value-row="<%= @tile.row %>" phx-value-column="<%= @tile.column %>" phx-target="<%= @myself %>">
       <%= @icon %>
     </div>
     """

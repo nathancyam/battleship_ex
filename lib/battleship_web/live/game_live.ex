@@ -23,6 +23,7 @@ defmodule BattleshipWeb.GameLive do
         game_pid: nil,
         player: Player.new("Dude"),
         available_ships: Ship.all(),
+        message: "Waiting for other player to join game",
         selection: @empty_selection,
         ready?: false,
         winner?: nil,
@@ -34,7 +35,7 @@ defmodule BattleshipWeb.GameLive do
         player_joined?: false
       )
 
-    {:ok, socket}
+    {:ok, socket, layout: {BattleshipWeb.LayoutView, "game.html"}}
   end
 
   def handle_event("confirm_ready", _params, socket) do
@@ -53,12 +54,20 @@ defmodule BattleshipWeb.GameLive do
 
   def handle_cast(:player_joined, socket) do
     Logger.info("another player has joined during setup phase")
-    {:noreply, assign(socket, :player_joined?, true)}
+
+    {:noreply,
+     socket
+     |> assign(:player_joined?, true)
+     |> assign(:message, "Another player is setting up their board.")}
   end
 
   def handle_cast(:player_left, socket) do
     Logger.info("opponent has left during setup phase")
-    {:noreply, assign(socket, :player_joined?, false)}
+
+    {:noreply,
+     socket
+     |> assign(:player_joined?, false)
+     |> assign(:message, "Waiting for other player to join game")}
   end
 
   def handle_cast({:receive_selection_from_opponent, tile, tiles}, socket) do
@@ -76,10 +85,15 @@ defmodule BattleshipWeb.GameLive do
     send_update(TileLiveComponent, id: place_id, icon: ConsoleRenderer.to_emoji(placement_tile))
 
     # Clear existing error messages and unlock turn
-    {:noreply, socket |> assign(:turn_lock?, false) |> assign(:error_msg, nil)}
+    {:noreply,
+     socket
+     |> assign(:turn_lock?, false)
+     |> assign(:error_msg, nil)
+     |> assign(:message, "Your turn")}
   end
 
-  def handle_cast({:update_assigns, assigns}, socket), do: {:noreply, assign(socket, assigns)}
+  def handle_cast({:update_assigns, assigns}, socket),
+    do: {:noreply, assign(socket, assigns) |> assign(:message, "Waiting on other player...")}
 
   def handle_info(
         {:tile, "tile", from, %{"row" => _row, "column" => _column} = tile_selection},
@@ -103,7 +117,8 @@ defmodule BattleshipWeb.GameLive do
     else
       {:noreply,
        socket
-       |> (&GuessAction.guess(&2, &1)).(tile_selection)}
+       |> (&GuessAction.guess(&2, &1)).(tile_selection)
+       |> assign(:message, "Waiting on other player...")}
     end
   end
 
@@ -145,6 +160,7 @@ defmodule BattleshipWeb.GameLive do
     socket
     |> assign(:ready?, true)
     |> assign(:turn_lock?, false)
+    |> assign(:message, "Your turn")
     |> assign(Setup.start_game(game_pid))
   end
 end
