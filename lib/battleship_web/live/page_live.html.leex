@@ -5,29 +5,63 @@
     <i class="fab fa-github"></i>
   </div>
   <div class="join-form">
-    <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :submit, class: "has-background-white-bis card"] %>
-      <div class="card-content">
-        <div class="field">
-          <label class="label">Player Name</label>
-          <div class="control">
-            <%= text_input f, :player_name, class: "input", placeholder: "Player Name" %>
-          </div>
-          <%= error_tag f, :player_name %>
-        </div>
-        <div class="field">
-          <label class="label">Game ID</label>
-          <div class="control">
-            <%= text_input f, :game_id, class: "input", placeholder: "Game ID" %>
-          </div>
-          <%= error_tag f, :game_id %>
-          <p class="help">Leave blank to generate game ID</p>
-        </div>
-        <div class="field is-grouped">
-          <div class="control">
-            <%= submit "Join or create game", [class: "button is-link"] %>
-          </div>
-        </div>
+    <div class="card has-background-white-bis">
+      <div class="tabs is-fullwidth">
+        <ul>
+          <li class="is-active"><a phx-click="create_form">Create Game</a></li>
+          <li><a phx-click="login_form">Login</a></li>
+        </ul>
       </div>
-    </form>
+      <%= if @active_form == "create_form" do %>
+      <%= f = form_for @game_changeset, "#", [phx_change: :validate, phx_submit: :submit] %>
+        <div class="card-content">
+          <div class="field">
+            <label class="label">Player Name</label>
+            <div class="control">
+              <%= text_input f, :player_name, class: "input", placeholder: "Player Name" %>
+            </div>
+            <%= error_tag f, :player_name %>
+          </div>
+          <div class="field">
+            <label class="label">Game ID</label>
+            <div class="control">
+              <%= text_input f, :game_id, class: "input", placeholder: "Game ID" %>
+            </div>
+            <%= error_tag f, :game_id %>
+            <p class="help">Leave blank to generate game ID</p>
+          </div>
+          <div class="field is-grouped">
+            <div class="control">
+              <%= submit "Join or create game", [class: "button is-link"] %>
+            </div>
+          </div>
+        </div>
+      </form>
+      <% else %>
+      <%= f = form_for @login_changeset, Routes.user_session_path(@socket, :create), [as: :user, phx_submit: :login, phx_trigger_action: @trigger_action] %>
+        <div class="card-content">
+          <div class="field">
+            <label class="label">Email</label>
+            <div class="control">
+              <%= text_input f, :email, class: "input", placeholder: "Email" %>
+            </div>
+            <%= error_tag f, :email %>
+          </div>
+          <div class="field">
+            <label class="label">Password</label>
+            <div class="control">
+              <%= password_input f, :password, class: "input" %>
+            </div>
+            <%= error_tag f, :password %>
+          </div>
+          <div class="field is-grouped">
+            <div class="control">
+              <%= submit "Login", [class: "button is-link"] %>
+            </div>
+          </div>
+        </div>
+      </form>
+      <% end %>
+    </div>
   </div>
 </section>
