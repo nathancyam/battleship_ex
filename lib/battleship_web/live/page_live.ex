@@ -7,7 +7,6 @@ defmodule BattleshipWeb.PageLive do
 
   @impl true
   def mount(_params, session, socket) do
-    IO.inspect(session, label: "Session")
     changeset = New.changeset(%New{}, %{})
 
     login_changeset =
