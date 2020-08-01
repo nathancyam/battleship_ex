@@ -19,6 +19,10 @@ secret_key_base =
     You can generate one by calling: mix phx.gen.secret
     """
 
+config :new_relic_agent,
+  app_name: System.get_env("NEW_RELIC_APP_NAME"),
+  license_key: System.get_env("NEW_RELIC_LICENSE_KEY")
+
 config :battleship, BattleshipWeb.Endpoint,
   http: [
     port: {:system, "PORT"},
