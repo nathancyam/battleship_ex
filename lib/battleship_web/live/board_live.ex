@@ -1,4 +1,10 @@
 defmodule BattleshipWeb.BoardLiveComponent do
+  @moduledoc """
+  Component that renders an empty board initially. Throughout the game
+  progress, their tile are updated asynchronouly by sending the tile
+  the relevant change message.
+  """
+
   use BattleshipWeb, :live_component
 
   alias BattleshipWeb.TileLiveComponent

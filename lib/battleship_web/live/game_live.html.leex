@@ -10,21 +10,19 @@
   </div>
 <% end %>
 
-<%= unless is_nil(@hit_or_miss) do %>
-  <h3><%= @hit_or_miss %></h3>
-<% end %>
-
 <div class="tile is-ancestor">
   <div class="game-setup tile is-vertical is-parent">
     <div class="tile box is-child">
-      <p class="game-message"><%= @message %></p>
+      <p class="game-message">
+        <%= unless is_nil(@hit_or_miss) do %>
+          <h3><%= @hit_or_miss %></h3>
+        <% end %>
+        <%= @message %>
+      </p>
+      <%= unless is_nil(@error_msg) do %>
+        <p class="game-error-msg"><%= @error_msg %></p>
+      <% end %>
     </div>
-
-    <%= unless is_nil(@error_msg) do %>
-      <div class="tile box is-child">
-        <span class="game-error-msg"><%= @error_msg %></span>
-      </div>
-    <% end %>
 
     <%= if ready?(@available_ships) and not @game_in_session? do %>
       <button id="confirm-ready" class="button" phx-click="confirm_ready">Ready</button>
